@@ -42,16 +42,16 @@ EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
-#12
+
 def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
-#12
+
 def make_pw_hash(username, password, salt = None):
     if not salt:
         salt = make_salt()
     h = hashlib.sha256(username + password + salt).hexdigest()
     return '%s|%s' % (h, salt)
-#12
+
 def valid_pw(username, password, h):
     salt = h.split('|')[1]
     if h == make_pw_hash(username, password, salt):
@@ -90,12 +90,18 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+    @classmethod
+    def login(cls, name, pw):
+        u = cls.by_name(name)
+        if u and valid_pw(name, pw, u.pw_hash):
+            return u
+
 class User(db.Model):
     username = db.StringProperty(required = True)
     pw_hash = db.StringProperty(required = True)
     email = db.StringProperty
 
-class MainPage(Handler):
+class Signup(Handler):
     def get(self):
         self.render("signup.html")
     def post(self):
@@ -107,31 +113,36 @@ class MainPage(Handler):
 
         #This parameter always send back username and email
         params = dict(username=username, email=email)
-
-        if not valid_username(username):
-            params['error_username'] = "That's not a valid username."
-            errors = True
-        if not valid_password(password):
-            params['error_password'] = "That's not a valid password."
-            errors = True
-        elif password != verify:
-            params['error_verify'] = "Your passwords doesn't match."
-            errors = True
-        if not valid_email(email):
-            params['error_email'] = "That's not a valid email."
-            errors = True
-
-        if errors:
-            self.render('signup.html', **params)
+        user = User.gql("WHERE username = '%s'" % username).get()
+        if user:
+            params['exist_error'] = "That user already exists."
+            errors = True # user already exists
+            self.render("signup.html", **params)
         else:
-            hash = make_pw_hash(username, password)
-            user = User(username=username, pw_hash=hash, email=email)
-            user.put()
-            user_id = str(user.key().id())
-            cookie = make_user_cookie(user_id)
-            self.response.headers.add_header('Set-Cookie',
-                                             'user_id=%s; Path=/' % cookie)
-            self.redirect("/welcome")
+            if not valid_username(username):
+                params['error_username'] = "That's not a valid username."
+                errors = True
+            if not valid_password(password):
+                params['error_password'] = "That's not a valid password."
+                errors = True
+            elif password != verify:
+                params['error_verify'] = "Your passwords doesn't match."
+                errors = True
+            if not valid_email(email):
+                params['error_email'] = "That's not a valid email."
+                errors = True
+
+            if errors:
+                self.render('signup.html', **params)
+            else:
+                hash = make_pw_hash(username, password)
+                user = User(username=username, pw_hash=hash, email=email)
+                user.put()
+                user_id = str(user.key().id())
+                cookie = make_user_cookie(user_id)
+                self.response.headers.add_header('Set-Cookie',
+                                                 'user_id=%s; Path=/' % cookie)
+                self.redirect("/welcome")
 
 class LoginPage(Handler):
     def get(self):
@@ -168,7 +179,7 @@ class LogoutPage(Handler):
         self.redirect("/signup")
 
 app = webapp2.WSGIApplication([
-    ('/signup', MainPage),
+    ('/signup', Signup),
     ('/login', LoginPage),
     ('/welcome', WelcomePage),
     ('/logout', LogoutPage)
