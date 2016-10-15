@@ -22,7 +22,7 @@
             <input type="text" name="username" value="{{username}}">
           </td>
           <td class="error">
-            <font color="red">{{error_username}} </font>
+            <font color="red">{{error_username}}{{exist_error}}</font>
           </td>
         </tr>
 
@@ -34,7 +34,7 @@
             <input type="password" name="password" value="">
           </td>
           <td class="error">
-            <font color="red">{{error_password}} </font>
+            <font color="red">{{error_password}}</font>
           </td>
         </tr>
 
@@ -46,7 +46,7 @@
             <input type="password" name="verify" value="">
           </td>
           <td class="error">
-            <font color="red">{{error_verify}} </font>
+            <font color="red">{{error_verify}}</font>
           </td>
         </tr>
 
@@ -58,12 +58,7 @@
             <input type="text" name="email" value="{{email}}">
           </td>
           <td class="error">
-            <font color="red">{{error_email}} </font>
-          </td>
-        </tr>
-        <tr>
-          <td class="error">
-            <font color="red">{{exist_error}} </font>
+            <font color="red">{{error_email}}</font>
           </td>
         </tr>
       </table>
