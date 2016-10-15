@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-#
-# Copyright 2007 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 import os
 import jinja2
 import webapp2
@@ -26,7 +10,7 @@ import cgi
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
-                                autoescape = True)
+                               autoescape = True)
 SECRET = "becauesiamhappy"
 from google.appengine.ext import db
 
@@ -41,7 +25,6 @@ def valid_password(password):
 EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
-
 
 def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
@@ -70,7 +53,7 @@ def valid_login(username, password):
         return None
 
     user = User.all().filter("username =", username).get()
-    if (not user):
+    if not user:
         return None
 
     if valid_pw(username, password, user.pw_hash):
@@ -96,6 +79,40 @@ class Handler(webapp2.RequestHandler):
         if u and valid_pw(name, pw, u.pw_hash):
             return u
 
+#blog
+class Post(db.Model):
+    subject = db.StringProperty(required = True)
+    content = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+
+class MainPage(Handler):
+    def get(self):
+        posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC limit 10")
+        posts = Post.all().order('-created')
+        self.render("blogpage.html", posts=posts)
+
+class NewPostPage(Handler):
+    def get(self):
+        self.render("newpost.html")
+
+    def post(self):
+        subject = self.request.get("subject")
+        content = self.request.get("content")
+
+        if subject and content:
+            post = Post(subject=subject, content=content)
+            post.put()
+            self.redirect("/blog/%s" %post.key().id())
+        else:
+            error = "we need both a subject and content, Please!"
+            self.render("newpost.html", subject=subject, content=content, error=error)
+
+class PostPage(Handler):
+    def get(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        self.render("blogpage.html", posts=[post])
+
+#user
 class User(db.Model):
     username = db.StringProperty(required = True)
     pw_hash = db.StringProperty(required = True)
@@ -142,7 +159,7 @@ class Signup(Handler):
                 cookie = make_user_cookie(user_id)
                 self.response.headers.add_header('Set-Cookie',
                                                  'user_id=%s; Path=/' % cookie)
-                self.redirect("/welcome")
+                self.redirect("/blog/welcome")
 
 class LoginPage(Handler):
     def get(self):
@@ -161,14 +178,14 @@ class LoginPage(Handler):
             cookie = make_user_cookie(user_id)
             self.response.headers.add_header('Set-Cookie',
                                                 'user_id=%s; Path=/' % cookie)
-            self.redirect("/welcome")
+            self.redirect("/blog/welcome")
 
 class WelcomePage(Handler):
     def get(self):
         cookie = self.request.cookies.get("user_id")
         user_id = cookie.split("|",1)[0]
         if not valid_user_cookie(user_id, cookie):
-            self.redirect("/signup")
+            self.redirect("/blog/signup")
         else:
             username = User.get_by_id(int(user_id)).username
             self.render("welcome.html", username=username)
@@ -176,11 +193,14 @@ class WelcomePage(Handler):
 class LogoutPage(Handler):
     def get(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
-        self.redirect("/signup")
+        self.redirect("/blog/signup")
 
 app = webapp2.WSGIApplication([
-    ('/signup', Signup),
-    ('/login', LoginPage),
-    ('/welcome', WelcomePage),
-    ('/logout', LogoutPage)
+    ('/blog/?', MainPage),
+    ('/blog/newpost', NewPostPage),
+    ('/blog/([0-9]+)', PostPage),
+    ('/blog/signup', Signup),
+    ('/blog/login', LoginPage),
+    ('/blog/welcome', WelcomePage),
+    ('/blog/logout', LogoutPage)
 ], debug=True)
