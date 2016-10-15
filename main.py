@@ -93,6 +93,7 @@ class Handler(webapp2.RequestHandler):
 class User(db.Model):
     username = db.StringProperty(required = True)
     pw_hash = db.StringProperty(required = True)
+    email = db.StringProperty
 
 class MainPage(Handler):
     def get(self):
@@ -124,7 +125,7 @@ class MainPage(Handler):
             self.render('signup.html', **params)
         else:
             hash = make_pw_hash(username, password)
-            user = User(username=username, pw_hash=hash)
+            user = User(username=username, pw_hash=hash, email=email)
             user.put()
             user_id = str(user.key().id())
             cookie = make_user_cookie(user_id)
