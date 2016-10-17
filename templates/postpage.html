@@ -1,47 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link type="text/css" rel="stylesheet" href="/static/style.css" />
-    <title>Eunbi's Blog</title>
-</head>
-<body>
-    <a href="/blog" class="main-title">Eunbi's Blog</a>
-    <div class="login-area">
-        {% if username %}
-          {{username}} (<a class="login-link" href="/blog/logout">logout</a>)
-        {% else %}
-          <a class="login-link" href="/blog/login">login</a>
-          |
-          <a class="login-link" href="/blog/signup">signup</a>
-        {% endif %}
-    </div>
-    <div id="content">
-      {% for p in posts %}
-          <div class="post">
-            <div class="post-heading">
-               <a href="/blog/{{p.key().id()}}" class="post-title">
-                {{p.subject}}
-                </a>
-              <div class="post-date">
-                {{p.created.strftime("%b %d, %Y")}}
-              </div>
-            </div>
+{% extends "blogpage.html" %}
 
-            <div class="post-content">
-            {{p.content.replace("\n", "<br>") | safe}}
-            </div>
-            <div class="post-end">
-              {% if user_id %}
-                <a class="login-link" href="/blog/edit">edit</a> |
-                <a class="login-link" href="/blog/delete">delete</a>
-              {% else %}
-                <a class="login-link" href="/blog/like">like</a> |
-                <a class="login-link" href="/blog/dislike">dislike</a>
-              {% endif %}
-            </div>
-          </div>
-        <br><br>
-      {% endfor %}
-    </div>
-</body>
-</html>
+{% block content %}
+<div class="post-end">
+  {% if user_id %}
+    <a class="login-link" href="/blog/edit">edit</a> |
+    <a class="login-link" href="/blog/delete">delete</a>
+  {% else %}
+    <a class="login-link" href="/blog/like">like</a> |
+    <a class="login-link" href="/blog/dislike">dislike</a>
+  {% endif %}
+</div>
+<form method="post">
+  <label>
+    <div>Comment</div>
+    <textarea name="comment">{{comment}}</textarea>
+    <input type="submit">
+  </label>
+</form>
+<br><br>
+
+{% endblock %}

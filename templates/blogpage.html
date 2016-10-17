@@ -26,11 +26,12 @@
                 {{p.created.strftime("%b %d, %Y")}}
               </div>
             </div>
-
             <div class="post-content">
             {{p.content.replace("\n", "<br>") | safe}}
             </div>
           </div>
+            {% block content %}
+            {% endblock %}
         <br><br>
       {% endfor %}
     </div>
