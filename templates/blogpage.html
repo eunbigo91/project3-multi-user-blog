@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="/static/style.css" />
+    <title>Eunbi's Blog</title>
+</head>
+<body>
+    <a href="/blog" class="main-title">Eunbi's Blog</a>
+    <div class="login-area">
+        {% if username %}
+          {{username}} (<a class="login-link" href="/blog/logout">logout</a>)
+        {% else %}
+          <a class="login-link" href="/blog/login">login</a>
+          |
+          <a class="login-link" href="/blog/signup">signup</a>
+        {% endif %}
+    </div>
+    <div id="content">
+      {% for p in posts %}
+          <div class="post">
+            <div class="post-heading">
+               <a href="/blog/{{p.key().id()}}" class="post-title">
+                {{p.subject}}
+                </a>
+              <div class="post-date">
+                {{p.created.strftime("%b %d, %Y")}}
+              </div>
+            </div>
+
+            <div class="post-content">
+            {{p.content.replace("\n", "<br>") | safe}}
+            </div>
+          </div>
+        <br><br>
+      {% endfor %}
+    </div>
+</body>
+</html>

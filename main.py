@@ -66,7 +66,7 @@ class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
 
-    def render_str(self, template, **params): #self, file_name, bunch of extra parameters.
+    def render_str(self, template, **params):
         t = jinja_env.get_template(template)
         return t.render(params)
 
@@ -83,13 +83,29 @@ class Handler(webapp2.RequestHandler):
 class Post(db.Model):
     subject = db.StringProperty(required = True)
     content = db.TextProperty(required = True)
+    user_id = db.StringProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+
+class Comment(db.Model):
+    username = db.StringProperty(required = True)
+    content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
 class MainPage(Handler):
     def get(self):
         posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC limit 10")
         posts = Post.all().order('-created')
-        self.render("blogpage.html", posts=posts)
+
+        cookie = self.request.cookies.get("user_id")
+        if cookie:
+            user_id = cookie.split("|",1)[0]
+            if not valid_user_cookie(user_id, cookie):
+                self.redirect("/blog/signup")
+            else:
+                username = User.get_by_id(int(user_id)).username
+                self.render("blogpage.html", posts=posts, username=username)
+        else:
+            self.render("blogpage.html", posts=posts)
 
 class NewPostPage(Handler):
     def get(self):
@@ -99,18 +115,35 @@ class NewPostPage(Handler):
         subject = self.request.get("subject")
         content = self.request.get("content")
 
-        if subject and content:
-            post = Post(subject=subject, content=content)
-            post.put()
-            self.redirect("/blog/%s" %post.key().id())
+        cookie = self.request.cookies.get("user_id")
+        user_id = cookie.split("|",1)[0]
+        if not valid_user_cookie(user_id, cookie):
+            self.redirect("/blog/signup")
         else:
-            error = "we need both a subject and content, Please!"
-            self.render("newpost.html", subject=subject, content=content, error=error)
+            if subject and content:
+                post = Post(subject=subject, content=content, user_id=user_id)
+                post.put()
+                self.redirect("/blog/%s" %post.key().id())
+            else:
+                error = "we need both a subject and content, Please!"
+                self.render("newpost.html", subject=subject, content=content, error=error)
 
 class PostPage(Handler):
     def get(self, key_id):
         post = Post.get_by_id(int(key_id))
-        self.render("blogpage.html", posts=[post])
+        cookie = self.request.cookies.get("user_id")
+        if cookie:
+            user_id = cookie.split("|",1)[0]
+            if not valid_user_cookie(user_id, cookie):
+                self.redirect("/blog")
+            else:
+                username = User.get_by_id(int(user_id)).username
+                if user_id == post.user_id:
+                    self.render("postpage.html", posts=[post], username=username, user_id=user_id)
+                else:
+                    self.render("postpage.html", posts=[post], username=username)
+        else:
+            self.redirect("/blog", posts=[post])
 
 #user
 class User(db.Model):
@@ -177,7 +210,7 @@ class LoginPage(Handler):
         else:
             cookie = make_user_cookie(user_id)
             self.response.headers.add_header('Set-Cookie',
-                                                'user_id=%s; Path=/' % cookie)
+                                             'user_id=%s; Path=/' % cookie)
             self.redirect("/blog/welcome")
 
 class WelcomePage(Handler):
