@@ -94,7 +94,7 @@ class Comment(db.Model):
 
 class MainPage(Handler):
     def get(self):
-        posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC limit 10")
+        #posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC limit 10")
         posts = Post.all().order('-created')
 
         cookie = self.request.cookies.get("user_id")
@@ -132,8 +132,7 @@ class NewPostPage(Handler):
 class PostPage(Handler):
     def get(self, key_id):
         post = Post.get_by_id(int(key_id))
-        comments = db.GqlQuery("SELECT * FROM Comment ORDER BY created ASC limit 10")
-        comments = Comment.all().order('-created')
+        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC limit 10", id=key_id)
         cookie = self.request.cookies.get("user_id")
 
         if cookie:

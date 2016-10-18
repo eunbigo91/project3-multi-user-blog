@@ -14,11 +14,13 @@
   <label>
      {% for c in comments %}
      <div class="comment">
-      <div class="comment-writer">
-        {{c.username}}
-      </div>
-      <div class="comment-date">
-        {{c.created.strftime("%b %d, %Y")}}
+      <div class="comment-heading">
+        <div class="comment-writer">
+          {{c.username}}
+        </div>
+        <div class="comment-date">
+          {{c.created.strftime("%b %d, %Y")}}
+        </div>
       </div>
       <div class="comment-content">
         {{c.comment.replace("\n", "<br>") | safe}}
@@ -26,8 +28,8 @@
       </div>
         <br><br>
       {% endfor %}
-      <div>Comment ({{username}})</div>
-    <textarea name="comment">{{comment}}</textarea>
+      <div class="comment-input">Comment ({{username}})</div>
+    <textarea name="comment">{{comment}}</textarea><br>
     <input type="submit">
   </label>
 </form>
