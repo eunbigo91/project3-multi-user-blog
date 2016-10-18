@@ -35,5 +35,39 @@
         <br><br>
       {% endfor %}
     </div>
+    {% if comments %}
+    <form method="post">
+      <label>
+         {% for c in comments %}
+         <div class="comment">
+          <div class="comment-heading">
+            <div class="comment-writer">
+              {{c.username}}
+            </div>
+            <div class="comment-option">
+            {% if c.username == username %}
+                <a class="post-link" href="/post/edit">edit</a> |
+                <a class="post-link" href="/post/delete">delete</a>
+              {% else %}
+                <a class="post-link" href="/post/like">like</a> |
+                <a class="post-link" href="/post/dislike">dislike</a>
+            {% endif %}
+            </div>
+            <div class="comment-date">
+              {{c.created.strftime("%b %d, %Y")}}
+            </div>
+          </div>
+          <div class="comment-content">
+            {{c.comment.replace("\n", "<br>") | safe}}
+          </div>
+          </div>
+            <br><br>
+          {% endfor %}
+          <div class="comment-input">Comment ({{username}})</div>
+        <textarea name="comment">{{comment}}</textarea><br>
+        <input type="submit">
+      </label>
+    </form>
+    {% endif %}
 </body>
 </html>
