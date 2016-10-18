@@ -88,7 +88,8 @@ class Post(db.Model):
 
 class Comment(db.Model):
     username = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
+    comment = db.TextProperty(required = True)
+    post_id = db.StringProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
 class MainPage(Handler):
@@ -131,7 +132,10 @@ class NewPostPage(Handler):
 class PostPage(Handler):
     def get(self, key_id):
         post = Post.get_by_id(int(key_id))
+        comments = db.GqlQuery("SELECT * FROM Comment ORDER BY created ASC limit 10")
+        comments = Comment.all().order('-created')
         cookie = self.request.cookies.get("user_id")
+
         if cookie:
             user_id = cookie.split("|",1)[0]
             if not valid_user_cookie(user_id, cookie):
@@ -139,11 +143,20 @@ class PostPage(Handler):
             else:
                 username = User.get_by_id(int(user_id)).username
                 if user_id == post.user_id:
-                    self.render("postpage.html", posts=[post], username=username, user_id=user_id)
+                    self.render("postpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
                 else:
-                    self.render("postpage.html", posts=[post], username=username)
+                    self.render("postpage.html", posts=[post], username=username, comments=comments)
         else:
-            self.redirect("/blog", posts=[post])
+            self.render("blogpage.html", posts=[post], comment=comment)
+    def post(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        comment = self.request.get("comment")
+        cookie = self.request.cookies.get("user_id")
+        user_id = cookie.split("|",1)[0]
+        username = User.get_by_id(int(user_id)).username
+        cmt = Comment(username=username, comment=comment, post_id=key_id)
+        cmt.put()
+        self.redirect("/blog/%s" %post.key().id())
 
 #user
 class User(db.Model):

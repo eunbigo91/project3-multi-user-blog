@@ -12,7 +12,21 @@
 </div>
 <form method="post">
   <label>
-    <div>Comment</div>
+     {% for c in comments %}
+     <div class="comment">
+      <div class="comment-writer">
+        {{c.username}}
+      </div>
+      <div class="comment-date">
+        {{c.created.strftime("%b %d, %Y")}}
+      </div>
+      <div class="comment-content">
+        {{c.comment.replace("\n", "<br>") | safe}}
+      </div>
+      </div>
+        <br><br>
+      {% endfor %}
+      <div>Comment ({{username}})</div>
     <textarea name="comment">{{comment}}</textarea>
     <input type="submit">
   </label>
