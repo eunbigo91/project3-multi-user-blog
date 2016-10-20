@@ -1,16 +1,6 @@
-<!DOCTYPE html>
+{% extends "blogpage.html" %}
+{% block content %}
 
-<html>
-  <head>
-    <title>Sign Up - Eunbi</title>
-    <style type="text/css">
-      .label {text-align: right}
-      .error {color: red}
-    </style>
-
-  </head>
-
-  <body>
     <h2>Signup</h2>
     <form method="post">
       <table>
@@ -62,9 +52,10 @@
           </td>
         </tr>
       </table>
-
       <input type="submit">
-    </form>
-  </body>
+      </form>
+      <br><br>
+      If you already have an account click here
+      <a href="/blog/login">login</a>
 
-</html>
+    {% endblock %}

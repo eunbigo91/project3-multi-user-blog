@@ -1,20 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link type="text/css" rel="stylesheet" href="/static/style.css" />
-    <title>Eunbi's Blog</title>
-</head>
-<body>
-    <a href="/blog" class="main-title">Eunbi's Blog</a>
-    <div class="login-area">
-        {% if username %}
-          {{username}} (<a class="login-link" href="/blog/logout">logout</a>)
-        {% else %}
-          <a class="login-link" href="/blog/login">login</a>
-          |
-          <a class="login-link" href="/blog/signup">signup</a>
-        {% endif %}
-    </div>
+{% extends "base.html" %}
+
+{% block content %}
+
     <div id="content">
       {% for p in posts %}
           <div class="post">
@@ -30,8 +17,15 @@
             {{p.content.replace("\n", "<br>") | safe}}
             </div>
           </div>
-            {% block content %}
-            {% endblock %}
+            <div class="post-end">
+              {% if user_id %}
+                <a class="login-link" href="/blog/newpost">edit</a> |
+                <a class="login-link" href="/blog/delete">delete</a>
+              {% else %}
+                <a class="login-link" href="/blog/like">like</a> |
+                <a class="login-link" href="/blog/dislike">dislike</a>
+              {% endif %}
+            </div>
         <br><br>
       {% endfor %}
     </div>
@@ -46,11 +40,11 @@
             </div>
             <div class="comment-option">
             {% if c.username == username %}
-                <a class="post-link" href="/post/edit">edit</a> |
-                <a class="post-link" href="/post/delete">delete</a>
+                <a class="comment-link" href="/comment/edit">edit</a> |
+                <a class="comment-link" href="/comment/delete">delete</a>
               {% else %}
-                <a class="post-link" href="/post/like">like</a> |
-                <a class="post-link" href="/post/dislike">dislike</a>
+                <a class="comment-link" href="/comment/like">like</a> |
+                <a class="comment-link" href="/comment/dislike">dislike</a>
             {% endif %}
             </div>
             <div class="comment-date">
@@ -69,5 +63,4 @@
       </label>
     </form>
     {% endif %}
-</body>
-</html>
+    {% endblock %}
