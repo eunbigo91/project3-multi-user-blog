@@ -7,27 +7,33 @@ import hmac
 import random
 import string
 import cgi
-
-template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
-                               autoescape = True)
-SECRET = "becauesiamhappy"
 from google.appengine.ext import db
 
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
+                               autoescape=True)
+SECRET = "becauesiamhappy"
+
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+PASS_RE = re.compile(r"^.{3,20}$")
+EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
+
 def valid_username(username):
     return username and USER_RE.match(username)
 
-PASS_RE = re.compile(r"^.{3,20}$")
+
 def valid_password(password):
     return password and PASS_RE.match(password)
 
-EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
+
 def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
+
 
 def make_pw_hash(username, password, salt = None):
     if not salt:
@@ -35,17 +41,21 @@ def make_pw_hash(username, password, salt = None):
     h = hashlib.sha256(username + password + salt).hexdigest()
     return '%s|%s' % (h, salt)
 
+
 def valid_pw(username, password, h):
     salt = h.split('|')[1]
     if h == make_pw_hash(username, password, salt):
         return True
 
+
 def make_user_cookie(user_id):
     hash = hmac.new(SECRET, user_id).hexdigest()
     return "%s|%s" % (user_id, hash)
 
+
 def valid_user_cookie(user_id, cookie):
     return (cookie == make_user_cookie(user_id))
+
 
 def valid_login(username, password):
     error = False
@@ -73,11 +83,18 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-    @classmethod
-    def login(cls, name, pw):
-        u = cls.by_name(name)
-        if u and valid_pw(name, pw, u.pw_hash):
-            return u
+    def login(self, user_id):
+        cookie = make_user_cookie(user_id)
+        self.response.headers.add_header('Set-Cookie',
+                                         'user_id=%s; Path=/' % cookie)
+        self.redirect("/blog/welcome")
+
+    def logout(self):
+        """
+            Removes login information.
+        """
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+
 
 #blog
 class Post(db.Model):
@@ -132,7 +149,7 @@ class NewPostPage(Handler):
 class PostPage(Handler):
     def get(self, key_id):
         post = Post.get_by_id(int(key_id))
-        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC limit 10", id=key_id)
+        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
         cookie = self.request.cookies.get("user_id")
 
         if cookie:
@@ -142,11 +159,11 @@ class PostPage(Handler):
             else:
                 username = User.get_by_id(int(user_id)).username
                 if user_id == post.user_id:
-                    self.render("postpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
+                    self.render("blogpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
                 else:
-                    self.render("postpage.html", posts=[post], username=username, comments=comments)
+                    self.render("blogpage.html", posts=[post], username=username, comments=comments)
         else:
-            self.render("blogpage.html", posts=[post], comment=comment)
+            self.render("blogpage.html", posts=[post], comments=comments)
     def post(self, key_id):
         post = Post.get_by_id(int(key_id))
         comment = self.request.get("comment")
@@ -155,56 +172,118 @@ class PostPage(Handler):
         username = User.get_by_id(int(user_id)).username
         cmt = Comment(username=username, comment=comment, post_id=key_id)
         cmt.put()
-        self.redirect("/blog/%s" %post.key().id())
+        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
+        self.render("blogpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
+
+
+class EditPostPage(Handler):
+    def get(self, key_id):
+        if self.user:
+            key = db.Key.from_path('Post', int(key_id))
+            post = db.get(key)
+            if post.user_id == self.user.key().id():
+                self.render("newpost.html", subject=post.subject,
+                            content=post.content)
+            else:
+                self.redirect("/blog/" + key_id + "?error=You don't have " +
+                              "access to edit this record.")
+        else:
+            self.redirect("/login?error=You need to be logged, " +
+                          "in order to edit your post!!")
 
 #user
 class User(db.Model):
-    username = db.StringProperty(required = True)
-    pw_hash = db.StringProperty(required = True)
+    username = db.StringProperty(required=True)
+    pw_hash = db.StringProperty(required=True)
     email = db.StringProperty
+
+    @classmethod
+    def by_id(self, uid):
+        """
+            This method fetchs User object from database, whose id is {uid}.
+        """
+        return User.get_by_id(uid, parent=users_key())
+
+    @classmethod
+    def by_name(self, name):
+        """
+            This method fetchs List of User objects from database,
+            whose name is {name}.
+        """
+        u = User.all().filter('name =', name).get()
+        return u
+
+    @classmethod
+    def login(self, name, pw):
+        """
+            This method creates a new User in database.
+        """
+        u = valid_login(name, pw)
+        if u:
+            return u
+        else:
+            self.render("login.html",
+            username=cgi.escape(username),
+            error="Invalid login.")
+
+    @classmethod
+    def register(self, username, pw, email=None):
+        """
+            This method creates a new User in database.
+        """
+        pw_hash = make_pw_hash(username, pw)
+        return User(username=username,
+                    pw_hash=pw_hash,
+                    email=email)
 
 class Signup(Handler):
     def get(self):
         self.render("signup.html")
     def post(self):
         errors = False
-        username = self.request.get("username")
-        password = self.request.get("password")
-        verify = self.request.get("verify")
-        email = self.request.get("email")
+        self.username = self.request.get("username")
+        self.password = self.request.get("password")
+        self.verify = self.request.get("verify")
+        self.email = self.request.get("email")
 
         #This parameter always send back username and email
-        params = dict(username=username, email=email)
-        user = User.gql("WHERE username = '%s'" % username).get()
-        if user:
-            params['exist_error'] = "That user already exists."
-            errors = True # user already exists
-            self.render("signup.html", **params)
-        else:
-            if not valid_username(username):
-                params['error_username'] = "That's not a valid username."
-                errors = True
-            if not valid_password(password):
-                params['error_password'] = "That's not a valid password."
-                errors = True
-            elif password != verify:
-                params['error_verify'] = "Your passwords doesn't match."
-                errors = True
-            if not valid_email(email):
-                params['error_email'] = "That's not a valid email."
-                errors = True
+        params = dict(username=self.username, email=self.email)
 
-            if errors:
-                self.render('signup.html', **params)
-            else:
-                hash = make_pw_hash(username, password)
-                user = User(username=username, pw_hash=hash, email=email)
-                user.put()
-                user_id = str(user.key().id())
-                cookie = make_user_cookie(user_id)
-                self.response.headers.add_header('Set-Cookie',
-                                                 'user_id=%s; Path=/' % cookie)
-                self.redirect("/blog/welcome")
+        if not valid_username(self.username):
+            params['error_username'] = "That's not a valid username."
+            errors = True
+        if not valid_password(self.password):
+            params['error_password'] = "That's not a valid password."
+            errors = True
+        elif self.password != self.verify:
+            params['error_verify'] = "Your passwords doesn't match."
+            errors = True
+        if not valid_email(self.email):
+            params['error_email'] = "That's not a valid email."
+            errors = True
+
+        if errors:
+            self.render('signup.html', **params)
+        else:
+            self.done()
+
+    def done(self, *a, **kw):
+        raise NotImplementedError
+
+class Register(Signup):
+    def done(self):
+        # Make sure the user doesn't already exist
+        u = User.by_name(self.username)
+        if u:
+            msg = 'That user already exists.'
+            self.render('signup.html', error_username=msg)
+        else:
+            u = User.register(self.username, self.password, self.email)
+            u.put()
+
+            user_id = User.login(self.username, self.password)
+            self.login(user_id)
+            self.redirect('/blog')
 
 class LoginPage(Handler):
     def get(self):
@@ -213,17 +292,14 @@ class LoginPage(Handler):
         errors = False
         username = self.request.get("username")
         password = self.request.get("password")
-        user_id = valid_login(username, password)
 
-        if (user_id == None):
-            self.render("login.html",
-                        username=cgi.escape(username),
-                        error="Invalid login.")
+        u = User.login(username, password)
+        if u:
+            self.login(u)
+            self.redirect('/blog/welcome')
         else:
-            cookie = make_user_cookie(user_id)
-            self.response.headers.add_header('Set-Cookie',
-                                             'user_id=%s; Path=/' % cookie)
-            self.redirect("/blog/welcome")
+            msg = 'Invalid login'
+            self.render('login.html', error=msg)
 
 class WelcomePage(Handler):
     def get(self):
@@ -237,14 +313,15 @@ class WelcomePage(Handler):
 
 class LogoutPage(Handler):
     def get(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+        self.logout()
         self.redirect("/blog/signup")
 
 app = webapp2.WSGIApplication([
     ('/blog/?', MainPage),
     ('/blog/newpost', NewPostPage),
     ('/blog/([0-9]+)', PostPage),
-    ('/blog/signup', Signup),
+    ('/blog/editpost/([0-9]+)', EditPostPage),
+    ('/blog/signup', Register),
     ('/blog/login', LoginPage),
     ('/blog/welcome', WelcomePage),
     ('/blog/logout', LogoutPage)
