@@ -19,7 +19,7 @@
           </div>
             <div class="post-end">
               {% if user_id %}
-                <a class="login-link" href="/blog/newpost">edit</a> |
+                <a class="login-link" href="/blog/editpost/{{p.key().id()}}">edit</a> |
                 <a class="login-link" href="/blog/delete">delete</a>
               {% else %}
                 <a class="login-link" href="/blog/like">like</a> |

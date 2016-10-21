@@ -39,8 +39,9 @@
 
     </style>
     <body>
-        <h1>new post</h1>
+        <h1>new post {{ eunbi }}</h1>
         <form method="post">
+            <input type="hidden" id="post_id" name="post_id" value="{{post_id}}">
             <label>
                 <div>subject</div>
                 <input type="text" name="subject" value="{{subject}}">
@@ -48,7 +49,7 @@
 
             <label>
                 <div>blog</div>
-                <textarea name="content">{{contents}}</textarea>
+                <textarea name="content">{% if content %}{{ content | safe}}{% endif %}</textarea>
             </label>
             <div class="error">{{error}}</div>
             <input type="submit">

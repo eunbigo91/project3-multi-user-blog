@@ -18,6 +18,9 @@ USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASS_RE = re.compile(r"^.{3,20}$")
 EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 
+def render_str(template, **params):
+    t = jinja_env.get_template(template)
+    return t.render(params)
 
 def valid_username(username):
     return username and USER_RE.match(username)
@@ -48,13 +51,24 @@ def valid_pw(username, password, h):
         return True
 
 
-def make_user_cookie(user_id):
-    hash = hmac.new(SECRET, user_id).hexdigest()
-    return "%s|%s" % (user_id, hash)
+def make_secure_val(val):
+    """
+        Creates secure value using secret.
+    """
+    return '%s|%s' % (val, hmac.new(SECRET, val).hexdigest())
 
 
+def check_secure_val(secure_val):
+    """
+        Verifies secure value against secret.
+    """
+    val = secure_val.split('|')[0]
+    if secure_val == make_secure_val(val):
+        return val
+
+#check
 def valid_user_cookie(user_id, cookie):
-    return (cookie == make_user_cookie(user_id))
+    return (cookie == make_secure_val(user_id))
 
 
 def valid_login(username, password):
@@ -77,24 +91,29 @@ class Handler(webapp2.RequestHandler):
         self.response.out.write(*a, **kw)
 
     def render_str(self, template, **params):
-        t = jinja_env.get_template(template)
-        return t.render(params)
+        params['user'] = self.user
+        return render_str(template, **params)
 
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val)
+
     def login(self, user_id):
-        cookie = make_user_cookie(user_id)
+        cookie = make_secure_val(user_id)
         self.response.headers.add_header('Set-Cookie',
                                          'user_id=%s; Path=/' % cookie)
         self.redirect("/blog/welcome")
 
     def logout(self):
-        """
-            Removes login information.
-        """
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.read_secure_cookie('user_id')
+        self.user = uid and User.by_id(int(uid))
 
 #blog
 class Post(db.Model):
@@ -111,9 +130,7 @@ class Comment(db.Model):
 
 class MainPage(Handler):
     def get(self):
-        #posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC limit 10")
         posts = Post.all().order('-created')
-
         cookie = self.request.cookies.get("user_id")
         if cookie:
             user_id = cookie.split("|",1)[0]
@@ -175,21 +192,36 @@ class PostPage(Handler):
         comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
         self.render("blogpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
 
-
 class EditPostPage(Handler):
     def get(self, key_id):
         if self.user:
+            post = Post.get_by_id(int(key_id))
+            cookie = self.request.cookies.get("user_id")
+            user_id = cookie.split("|",1)[0]
+            if post.user_id == user_id:
+                self.render("newpost.html", subject=post.subject, content=post.content)
+            else:
+                self.redirect("/blog")
+        else:
+            self.redirect("/blog/login")
+
+    def post(self, key_id):
+        if not self.user:
+            return self.redirect('/blog')
+
+        subject = self.request.get('subject')
+        content = self.request.get('content')
+
+        if subject and content:
             key = db.Key.from_path('Post', int(key_id))
             post = db.get(key)
-            if post.user_id == self.user.key().id():
-                self.render("newpost.html", subject=post.subject,
-                            content=post.content)
-            else:
-                self.redirect("/blog/" + key_id + "?error=You don't have " +
-                              "access to edit this record.")
+            post.subject = subject
+            post.content = content
+            post.put()
+            self.redirect('/blog/%s' %post.key().id())
         else:
-            self.redirect("/login?error=You need to be logged, " +
-                          "in order to edit your post!!")
+            error = "we need both a subject and content, Please!"
+            self.render("newpost.html", subject=subject, content=content, error=error)
 
 #user
 class User(db.Model):
@@ -202,7 +234,7 @@ class User(db.Model):
         """
             This method fetchs User object from database, whose id is {uid}.
         """
-        return User.get_by_id(uid, parent=users_key())
+        return User.get_by_id(uid)
 
     @classmethod
     def by_name(self, name):
@@ -214,17 +246,13 @@ class User(db.Model):
         return u
 
     @classmethod
-    def login(self, name, pw):
+    def login(self, username, pw):
         """
             This method creates a new User in database.
         """
-        u = valid_login(name, pw)
+        u = valid_login(username, pw)
         if u:
             return u
-        else:
-            self.render("login.html",
-            username=cgi.escape(username),
-            error="Invalid login.")
 
     @classmethod
     def register(self, username, pw, email=None):
@@ -239,6 +267,7 @@ class User(db.Model):
 class Signup(Handler):
     def get(self):
         self.render("signup.html")
+
     def post(self):
         errors = False
         self.username = self.request.get("username")
@@ -281,11 +310,10 @@ class Register(Signup):
             u = User.register(self.username, self.password, self.email)
             u.put()
 
-            user_id = User.login(self.username, self.password)
-            self.login(user_id)
+            self.login(u)
             self.redirect('/blog')
 
-class LoginPage(Handler):
+class Login(Handler):
     def get(self):
         self.render('login.html')
     def post(self):
@@ -301,7 +329,7 @@ class LoginPage(Handler):
             msg = 'Invalid login'
             self.render('login.html', error=msg)
 
-class WelcomePage(Handler):
+class Welcome(Handler):
     def get(self):
         cookie = self.request.cookies.get("user_id")
         user_id = cookie.split("|",1)[0]
@@ -311,7 +339,7 @@ class WelcomePage(Handler):
             username = User.get_by_id(int(user_id)).username
             self.render("welcome.html", username=username)
 
-class LogoutPage(Handler):
+class Logout(Handler):
     def get(self):
         self.logout()
         self.redirect("/blog/signup")
@@ -322,7 +350,7 @@ app = webapp2.WSGIApplication([
     ('/blog/([0-9]+)', PostPage),
     ('/blog/editpost/([0-9]+)', EditPostPage),
     ('/blog/signup', Register),
-    ('/blog/login', LoginPage),
-    ('/blog/welcome', WelcomePage),
-    ('/blog/logout', LogoutPage)
+    ('/blog/login', Login),
+    ('/blog/welcome', Welcome),
+    ('/blog/logout', Logout)
 ], debug=True)
