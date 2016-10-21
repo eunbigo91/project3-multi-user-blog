@@ -8,7 +8,6 @@ import random
 import string
 import cgi
 from google.appengine.ext import db
-import time
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
@@ -52,11 +51,9 @@ def valid_pw(username, password, h):
         return True
 
 
-def make_secure_val(val):
-    """
-        Creates secure value using secret.
-    """
-    return '%s|%s' % (val, hmac.new(SECRET, val).hexdigest())
+def make_secure_val(user_id):
+    hash = hmac.new(SECRET, user_id).hexdigest()
+    return "%s|%s" % (user_id, hash)
 
 
 def check_secure_val(secure_val):
@@ -122,6 +119,8 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     user_id = db.StringProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
+    likes = db.IntegerProperty(required = True)
+    dislikes = db.IntegerProperty(required = True)
 
 class Comment(db.Model):
     username = db.StringProperty(required = True)
@@ -157,7 +156,7 @@ class NewPostPage(Handler):
             self.redirect("/blog/signup")
         else:
             if subject and content:
-                post = Post(subject=subject, content=content, user_id=user_id)
+                post = Post(subject=subject, content=content, user_id=user_id, likes=0, dislikes=0)
                 post.put()
                 self.redirect("/blog/%s" %post.key().id())
             else:
@@ -200,7 +199,7 @@ class EditPostPage(Handler):
             cookie = self.request.cookies.get("user_id")
             user_id = cookie.split("|",1)[0]
             if post.user_id == user_id:
-                self.render("newpost.html", subject=post.subject, content=post.content)
+                self.render("newpost.html", post_id=key_id, subject=post.subject, content=post.content)
             else:
                 self.redirect("/blog")
         else:
@@ -232,10 +231,34 @@ class DeletePost(Handler):
             user_id = cookie.split("|",1)[0]
             if post.user_id == user_id:
                 post.delete()
-                time.sleep(30)
                 self.redirect("/blog")
             else:
                 self.error(401)
+        else:
+            self.redirect("/blog/login")
+
+class AddLike(Handler):
+    def get(self, key_id):
+        if self.user:
+            key = db.Key.from_path('Post', int(key_id))
+            post = db.get(key)
+            likes = post.likes +1
+            post.likes = likes
+            post.put()
+            self.redirect('/blog/%s' %post.key().id())
+        else:
+            self.redirect("/blog/login")
+
+
+class AddDislike(Handler):
+    def get(self, key_id):
+        if self.user:
+            key = db.Key.from_path('Post', int(key_id))
+            post = db.get(key)
+            dislikes = post.dislikes +1
+            post.dislikes = dislikes
+            post.put()
+            self.redirect('/blog/%s' %post.key().id())
         else:
             self.redirect("/blog/login")
 
@@ -325,7 +348,6 @@ class Register(Signup):
         else:
             u = User.register(self.username, self.password, self.email)
             u.put()
-
             self.login(u)
             self.redirect('/blog')
 
@@ -366,6 +388,8 @@ app = webapp2.WSGIApplication([
     ('/blog/([0-9]+)', PostPage),
     ('/blog/editpost/([0-9]+)', EditPostPage),
     ('/blog/delete/([0-9]+)', DeletePost),
+    ('/blog/addLike/([0-9]+)', AddLike),
+    ('/blog/addDislike/([0-9]+)', AddDislike),
     ('/blog/signup', Register),
     ('/blog/login', Login),
     ('/blog/welcome', Welcome),

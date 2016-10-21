@@ -22,8 +22,8 @@
                 <a class="login-link" href="/blog/editpost/{{p.key().id()}}">edit</a> |
                 <a class="login-link" href="/blog/delete/{{p.key().id()}}">delete</a>
               {% else %}
-                <a class="login-link" href="/blog/like">like</a> |
-                <a class="login-link" href="/blog/dislike">dislike</a>
+                <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like</a> |
+                <a class="login-link" href="/blog/addDislike/{{p.key().id()}}">dislike</a>
               {% endif %}
             </div>
         <br><br>
@@ -42,9 +42,6 @@
             {% if c.username == username %}
                 <a class="comment-link" href="/comment/edit">edit</a> |
                 <a class="comment-link" href="/comment/delete">delete</a>
-              {% else %}
-                <a class="comment-link" href="/comment/like">like</a> |
-                <a class="comment-link" href="/comment/dislike">dislike</a>
             {% endif %}
             </div>
             <div class="comment-date">
