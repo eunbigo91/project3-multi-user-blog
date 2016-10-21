@@ -348,7 +348,7 @@ class Register(Signup):
         else:
             u = User.register(self.username, self.password, self.email)
             u.put()
-            self.login(u)
+            self.login(str(u.key().id()))
             self.redirect('/blog')
 
 class Login(Handler):
