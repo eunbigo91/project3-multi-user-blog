@@ -18,12 +18,12 @@
             </div>
           </div>
             <div class="post-end">
-              {% if user_id %}
+              {% if p.user_id == user_id %}
                 <a class="login-link" href="/blog/editpost/{{p.key().id()}}">edit</a> |
                 <a class="login-link" href="/blog/delete/{{p.key().id()}}">delete</a>
               {% else %}
-                <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like</a> |
-                <a class="login-link" href="/blog/addDislike/{{p.key().id()}}">dislike</a>
+                <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like{{p.likes}}</a> |
+                <a class="login-link" href="/blog/addDislike/{{p.key().id()}}">dislike{{p.dislikes}}</a>
               {% endif %}
             </div>
         <br><br>

@@ -277,10 +277,6 @@ class User(db.Model):
 
     @classmethod
     def by_name(self, name):
-        """
-            This method fetchs List of User objects from database,
-            whose name is {name}.
-        """
         u = User.all().filter('name =', name).get()
         return u
 
