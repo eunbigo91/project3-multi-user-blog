@@ -8,6 +8,7 @@ import random
 import string
 import cgi
 from google.appengine.ext import db
+import time
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
@@ -223,6 +224,21 @@ class EditPostPage(Handler):
             error = "we need both a subject and content, Please!"
             self.render("newpost.html", subject=subject, content=content, error=error)
 
+class DeletePost(Handler):
+    def get(self, key_id):
+        if self.user:
+            post = Post.get_by_id(int(key_id))
+            cookie = self.request.cookies.get("user_id")
+            user_id = cookie.split("|",1)[0]
+            if post.user_id == user_id:
+                post.delete()
+                time.sleep(30)
+                self.redirect("/blog")
+            else:
+                self.error(401)
+        else:
+            self.redirect("/blog/login")
+
 #user
 class User(db.Model):
     username = db.StringProperty(required=True)
@@ -349,6 +365,7 @@ app = webapp2.WSGIApplication([
     ('/blog/newpost', NewPostPage),
     ('/blog/([0-9]+)', PostPage),
     ('/blog/editpost/([0-9]+)', EditPostPage),
+    ('/blog/delete/([0-9]+)', DeletePost),
     ('/blog/signup', Register),
     ('/blog/login', Login),
     ('/blog/welcome', Welcome),
