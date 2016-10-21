@@ -7,8 +7,8 @@
 <body>
     <a href="/blog" class="main-title">Eunbi's Blog</a>
     <div class="login-area">
-        {% if username %}
-          {{username}} (<a class="login-link" href="/blog/logout">logout</a>)
+        {% if user %}
+          {{user.username}} (<a class="login-link" href="/blog/logout">logout</a>)
         {% else %}
           <a class="login-link" href="/blog/login">login</a>
           |

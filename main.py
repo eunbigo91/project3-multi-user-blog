@@ -117,7 +117,7 @@ class Handler(webapp2.RequestHandler):
 class Post(db.Model):
     subject = db.StringProperty(required = True)
     content = db.TextProperty(required = True)
-    user_id = db.StringProperty(required = True)
+    user_id = db.IntegerProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
     likes = db.IntegerProperty(required = True)
     dislikes = db.IntegerProperty(required = True)
@@ -125,80 +125,63 @@ class Post(db.Model):
 class Comment(db.Model):
     username = db.StringProperty(required = True)
     comment = db.TextProperty(required = True)
-    post_id = db.StringProperty(required = True)
+    post_id = db.IntegerProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
 class MainPage(Handler):
     def get(self):
         posts = Post.all().order('-created')
-        cookie = self.request.cookies.get("user_id")
-        if cookie:
-            user_id = cookie.split("|",1)[0]
-            if not valid_user_cookie(user_id, cookie):
-                self.redirect("/blog/signup")
-            else:
-                username = User.get_by_id(int(user_id)).username
-                self.render("blogpage.html", posts=posts, username=username)
-        else:
-            self.render("blogpage.html", posts=posts)
+        self.render("blogpage.html", posts=posts)
+
 
 class NewPostPage(Handler):
     def get(self):
-        self.render("newpost.html")
+        if self.user:
+            self.render("newpost.html")
+        else:
+            self.redirect("/blog/login")
 
     def post(self):
+        if not self.user:
+            self.redirect("/blog/signup")
+
         subject = self.request.get("subject")
         content = self.request.get("content")
-
-        cookie = self.request.cookies.get("user_id")
-        user_id = cookie.split("|",1)[0]
-        if not valid_user_cookie(user_id, cookie):
-            self.redirect("/blog/signup")
+        if subject and content:
+            post = Post(subject=subject, content=content,
+                        user_id=self.user.key().id(), likes=0, dislikes=0)
+            post.put()
+            self.redirect("/blog/%s" %post.key().id())
         else:
-            if subject and content:
-                post = Post(subject=subject, content=content, user_id=user_id, likes=0, dislikes=0)
-                post.put()
-                self.redirect("/blog/%s" %post.key().id())
-            else:
-                error = "we need both a subject and content, Please!"
-                self.render("newpost.html", subject=subject, content=content, error=error)
+            error = "Please write subject and content!!"
+            self.render("newpost.html", subject=subject, content=content, error=error)
 
 class PostPage(Handler):
     def get(self, key_id):
         post = Post.get_by_id(int(key_id))
+        if not post:
+            self.redirect("/blog")
         comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
-        cookie = self.request.cookies.get("user_id")
-
-        if cookie:
-            user_id = cookie.split("|",1)[0]
-            if not valid_user_cookie(user_id, cookie):
-                self.redirect("/blog")
-            else:
-                username = User.get_by_id(int(user_id)).username
-                if user_id == post.user_id:
-                    self.render("blogpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
-                else:
-                    self.render("blogpage.html", posts=[post], username=username, comments=comments)
-        else:
-            self.render("blogpage.html", posts=[post], comments=comments)
+        self.render("blogpage.html", posts=[post], comments=comments)
     def post(self, key_id):
-        post = Post.get_by_id(int(key_id))
-        comment = self.request.get("comment")
-        cookie = self.request.cookies.get("user_id")
-        user_id = cookie.split("|",1)[0]
-        username = User.get_by_id(int(user_id)).username
-        cmt = Comment(username=username, comment=comment, post_id=key_id)
-        cmt.put()
-        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
-        self.render("blogpage.html", posts=[post], username=username, user_id=user_id, comments=comments)
+        if self.user:
+            post = Post.get_by_id(int(key_id))
+            if not post:
+                self.redirect("/blog")
+            comment = self.request.get("comment")
+            username = self.request.get("username")
+            cmt = Comment(username=username, comment=comment, post_id=key_id)
+            cmt.put()
+            comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
+            self.redirect('/blog/%s' %post.key().id())
+        else:
+            self.redirect("/blog/login")
 
 class EditPostPage(Handler):
     def get(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
-            cookie = self.request.cookies.get("user_id")
-            user_id = cookie.split("|",1)[0]
-            if post.user_id == user_id:
+            if post.user_id == self.user.key().id():
                 self.render("newpost.html", post_id=key_id, subject=post.subject, content=post.content)
             else:
                 self.redirect("/blog")
@@ -207,7 +190,7 @@ class EditPostPage(Handler):
 
     def post(self, key_id):
         if not self.user:
-            return self.redirect('/blog')
+            return self.redirect('/blog/login')
 
         subject = self.request.get('subject')
         content = self.request.get('content')
@@ -220,16 +203,14 @@ class EditPostPage(Handler):
             post.put()
             self.redirect('/blog/%s' %post.key().id())
         else:
-            error = "we need both a subject and content, Please!"
+            error = "Please write subject and content!!"
             self.render("newpost.html", subject=subject, content=content, error=error)
 
 class DeletePost(Handler):
     def get(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
-            cookie = self.request.cookies.get("user_id")
-            user_id = cookie.split("|",1)[0]
-            if post.user_id == user_id:
+            if post.user_id == self.user.key().id():
                 post.delete()
                 self.redirect("/blog")
             else:
@@ -266,7 +247,7 @@ class AddDislike(Handler):
 class User(db.Model):
     username = db.StringProperty(required=True)
     pw_hash = db.StringProperty(required=True)
-    email = db.StringProperty
+    email = db.StringProperty()
 
     @classmethod
     def by_id(self, uid):
@@ -370,8 +351,7 @@ class Welcome(Handler):
         if not valid_user_cookie(user_id, cookie):
             self.redirect("/blog/signup")
         else:
-            username = User.get_by_id(int(user_id)).username
-            self.render("welcome.html", username=username)
+            self.render("welcome.html", username=self.user.username)
 
 class Logout(Handler):
     def get(self):
