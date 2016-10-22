@@ -24,9 +24,11 @@
           {% if p.user_id == user.key().id() %}
             <a class="login-link" href="/blog/editpost/{{p.key().id()}}">edit</a> |
             <a class="login-link" href="/blog/delete/{{p.key().id()}}">delete</a>
+            {% endif %}
+          {% if liked %}
+            <a class="login-link" href="/blog/unLike/{{p.key().id()}}">unlike {{numOfLikes}}</a>
           {% else %}
-            <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like{{p.likes}}</a> |
-            <a class="login-link" href="/blog/addDislike/{{p.key().id()}}">dislike{{p.dislikes}}</a>
+            <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like {{numOfLikes}}</a>
           {% endif %}
         </div>
     <br><br>

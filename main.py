@@ -119,14 +119,21 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     user_id = db.IntegerProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
-    likes = db.IntegerProperty(required = True)
-    dislikes = db.IntegerProperty(required = True)
 
 class Comment(db.Model):
     username = db.StringProperty(required = True)
     comment = db.TextProperty(required = True)
     post_id = db.IntegerProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
+
+class Like(db.Model):
+    user_id = db.IntegerProperty(required=True)
+    post_id = db.IntegerProperty(required=True)
+
+    def getNumOfLikes(self, post_id):
+        likes = Like.all().filter('post_id =', key_id).get()
+        return likes.count()
+
 
 class MainPage(Handler):
     def get(self):
@@ -149,7 +156,7 @@ class NewPostPage(Handler):
         content = self.request.get("content")
         if subject and content:
             post = Post(subject=subject, content=content,
-                        user_id=self.user.key().id(), likes=0, dislikes=0)
+                        user_id=self.user.key().id())
             post.put()
             self.redirect("/blog/%s" %post.key().id())
         else:
@@ -161,8 +168,14 @@ class PostPage(Handler):
         post = Post.get_by_id(int(key_id))
         if not post:
             self.redirect("/blog")
-        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
-        self.render("blogpage.html", posts=[post], comments=comments)
+        comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=int(key_id))
+        user_id = str(self.user.key().id())
+        likes = db.GqlQuery("SELECT * FROM Like where post_id = :id", id=int(key_id))
+        liked = False
+        if likes.count() != 0:
+                liked = True
+        self.render("blogpage.html", posts=[post], comments=comments, numOfLikes=likes.count(), liked=liked)
+
     def post(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -170,10 +183,13 @@ class PostPage(Handler):
                 self.redirect("/blog")
             comment = self.request.get("comment")
             username = self.request.get("username")
-            cmt = Comment(username=username, comment=comment, post_id=key_id)
+            cmt = Comment(username=username, comment=comment, post_id=int(key_id))
             cmt.put()
-            comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=key_id)
-            self.redirect('/blog/%s' %post.key().id())
+            comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=int(key_id))
+            likes = db.GqlQuery("SELECT * FROM Like where post_id = :id", id=int(key_id))
+            if likes.count() != 0:
+                liked = True
+            self.render("blogpage.html", posts=[post], comments=comments, numOfLikes=likes.count(), liked=liked)
         else:
             self.redirect("/blog/login")
 
@@ -221,27 +237,24 @@ class DeletePost(Handler):
 class AddLike(Handler):
     def get(self, key_id):
         if self.user:
-            key = db.Key.from_path('Post', int(key_id))
-            post = db.get(key)
-            likes = post.likes +1
-            post.likes = likes
-            post.put()
-            self.redirect('/blog/%s' %post.key().id())
+            post = Post.get_by_id(int(key_id))
+            if self.user.key().id() == post.user_id:
+                self.redirect("/blog/" + key_id +
+                              "?error=You cannot like your " +
+                              "post.!!")
+                return
+
+            liked = db.GqlQuery("SELECT * FROM Like where post_id = " + str(key_id) + "and user_id="+str(self.user.key().id()))
+            if liked.count() == 0:
+                l = Like(user_id=self.user.key().id(), post_id=int(key_id))
+                l.put()
+                self.redirect('/blog/%s' %key_id)
+            else:
+                self.redirect("/blog/" + key_id +
+                              "?error=You already liked!")
         else:
             self.redirect("/blog/login")
 
-
-class AddDislike(Handler):
-    def get(self, key_id):
-        if self.user:
-            key = db.Key.from_path('Post', int(key_id))
-            post = db.get(key)
-            dislikes = post.dislikes +1
-            post.dislikes = dislikes
-            post.put()
-            self.redirect('/blog/%s' %post.key().id())
-        else:
-            self.redirect("/blog/login")
 
 #user
 class User(db.Model):
@@ -365,7 +378,6 @@ app = webapp2.WSGIApplication([
     ('/blog/editpost/([0-9]+)', EditPostPage),
     ('/blog/delete/([0-9]+)', DeletePost),
     ('/blog/addLike/([0-9]+)', AddLike),
-    ('/blog/addDislike/([0-9]+)', AddDislike),
     ('/blog/signup', Register),
     ('/blog/login', Login),
     ('/blog/welcome', Welcome),
