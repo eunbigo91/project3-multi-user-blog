@@ -130,10 +130,17 @@ class Like(db.Model):
     user_id = db.IntegerProperty(required=True)
     post_id = db.IntegerProperty(required=True)
 
+    @classmethod
     def getNumOfLikes(self, post_id):
-        likes = Like.all().filter('post_id =', key_id).get()
+        likes = db.GqlQuery("SELECT * FROM Like where post_id = " + str(post_id))
         return likes.count()
 
+    @classmethod
+    def checkLikes(self, post_id, user_id):
+        likes = db.GqlQuery("SELECT * FROM Like where post_id = " + str(post_id) + "and user_id="+ str(user_id))
+        if likes.count() == 0:
+            l = Like(user_id=int(user_id), post_id=int(post_id))
+            return l
 
 class MainPage(Handler):
     def get(self):
@@ -170,11 +177,9 @@ class PostPage(Handler):
             self.redirect("/blog")
         comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=int(key_id))
         user_id = str(self.user.key().id())
-        likes = db.GqlQuery("SELECT * FROM Like where post_id = :id", id=int(key_id))
-        liked = False
-        if likes.count() != 0:
-                liked = True
-        self.render("blogpage.html", posts=[post], comments=comments, numOfLikes=likes.count(), liked=liked)
+        likes = Like.getNumOfLikes(key_id)
+        liked = Like.checkLikes(key_id, self.user.key().id())
+        self.render("postpage.html", posts=[post], comments=comments, numOfLikes=likes, liked=liked)
 
     def post(self, key_id):
         if self.user:
@@ -186,10 +191,9 @@ class PostPage(Handler):
             cmt = Comment(username=username, comment=comment, post_id=int(key_id))
             cmt.put()
             comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id ORDER BY created ASC", id=int(key_id))
-            likes = db.GqlQuery("SELECT * FROM Like where post_id = :id", id=int(key_id))
-            if likes.count() != 0:
-                liked = True
-            self.render("blogpage.html", posts=[post], comments=comments, numOfLikes=likes.count(), liked=liked)
+            likes = Like.getNumOfLikes(key_id)
+            liked = Like.checkLikes(key_id, self.user.key().id())
+            self.render("postpage.html", posts=[post], comments=comments, numOfLikes=likes, liked=liked)
         else:
             self.redirect("/blog/login")
 
@@ -244,10 +248,9 @@ class AddLike(Handler):
                               "post.!!")
                 return
 
-            liked = db.GqlQuery("SELECT * FROM Like where post_id = " + str(key_id) + "and user_id="+str(self.user.key().id()))
-            if liked.count() == 0:
-                l = Like(user_id=self.user.key().id(), post_id=int(key_id))
-                l.put()
+            liked = Like.checkLikes(key_id, self.user.key().id())
+            if liked:
+                liked.put()
                 self.redirect('/blog/%s' %key_id)
             else:
                 self.redirect("/blog/" + key_id +

@@ -20,50 +20,12 @@
         {{p.content.replace("\n", "<br>") | safe}}
         </div>
       </div>
-        <div class="post-end">
-          {% if p.user_id == user.key().id() %}
-            <a class="login-link" href="/blog/editpost/{{p.key().id()}}">edit</a> |
-            <a class="login-link" href="/blog/delete/{{p.key().id()}}">delete</a>
-            {% endif %}
-          {% if liked %}
-            <a class="login-link" href="/blog/unLike/{{p.key().id()}}">unlike {{numOfLikes}}</a>
-          {% else %}
-            <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like {{numOfLikes}}</a>
-          {% endif %}
-        </div>
+        {% block post %}
+        {% endblock %}
     <br><br>
   {% endfor %}
 </div>
 {% if comments %}
-<form method="post">
-  <label>
-     {% for c in comments %}
-     <div class="comment">
-      <div class="comment-heading">
-        <div class="comment-writer">
-          {{c.username}}
-        </div>
-        <div class="comment-option">
-        {% if c.username == user.username %}
-            <a class="comment-link" href="/comment/edit">edit</a> |
-            <a class="comment-link" href="/comment/delete">delete</a>
-        {% endif %}
-        </div>
-        <div class="comment-date">
-          {{c.created.strftime("%b %d, %Y")}}
-        </div>
-      </div>
-      <div class="comment-content">
-        {{c.comment.replace("\n", "<br>") | safe}}
-      </div>
-      </div>
-        <br><br>
-      {% endfor %}
-      <div class="comment-input">Comment ({{user.username}})</div>
-      <input type="hidden" name="username" value="{{user.username}}">
-    <textarea name="comment">{{comment}}</textarea><br>
-    <input type="submit">
-  </label>
-</form>
+
 {% endif %}
 {% endblock %}
