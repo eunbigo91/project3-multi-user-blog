@@ -280,6 +280,34 @@ class Unlike(Handler):
         else:
             self.redirect("/blog/login")
 
+class EditComment(Handler):
+    def get(self, key_id, c_id):
+        if self.user:
+            c = Comment.get_by_id(int(c_id))
+            if c.username == self.user.username:
+                self.render("editcomment.html", comment=c.comment)
+            else:
+                self.redirect("/blog")
+        else:
+            self.redirect("/blog/login")
+
+    def post(self, key_id, c_id):
+        post = Post.get_by_id(int(key_id))
+        if not self.user:
+            return self.redirect('/blog/login')
+
+        comment = self.request.get('comment')
+
+        if comment:
+            c = Comment.get_by_id(int(c_id))
+            c.comment = comment
+            c.put()
+            self.redirect('/blog/%s' %post.key().id())
+        else:
+            error = "Please write comment!!"
+            self.render("editcomment.html", comment=comment)
+
+
 #user
 class User(db.Model):
     username = db.StringProperty(required=True)
@@ -401,8 +429,9 @@ app = webapp2.WSGIApplication([
     ('/blog/([0-9]+)', PostPage),
     ('/blog/editpost/([0-9]+)', EditPostPage),
     ('/blog/delete/([0-9]+)', DeletePost),
-    ('/blog/addLike/([0-9]+)', AddLike),
+    ('/blog/addlike/([0-9]+)', AddLike),
     ('/blog/unlike/([0-9]+)', Unlike),
+    ('/blog/editcomment/([0-9]+)/([0-9]+)', EditComment),
     ('/blog/signup', Register),
     ('/blog/login', Login),
     ('/blog/welcome', Welcome),

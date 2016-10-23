@@ -8,12 +8,12 @@
           <a class="login-link" href="/blog/delete/{{p.key().id()}}">delete</a>
           {% endif %}
         {% if liked %}
-           <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like {{numOfLikes}}</a>
+           <a class="login-link" href="/blog/addlike/{{p.key().id()}}">like {{numOfLikes}}</a>
         {% else %}
          <a class="login-link" href="/blog/unlike/{{p.key().id()}}">unlike {{numOfLikes}}</a>
         {% endif %}
       </div>
-  {% endfor %}
+
 
 <form method="post">
   <label>
@@ -25,8 +25,8 @@
         </div>
         <div class="comment-option">
         {% if c.username == user.username %}
-            <a class="comment-link" href="/comment/edit">edit</a> |
-            <a class="comment-link" href="/comment/delete">delete</a>
+            <a class="comment-link" href="/blog/editcomment/{{p.key().id()}}/{{c.key().id()}}">edit</a> |
+            <a class="comment-link" href="/blog/deletecomment/{{p.key().id()}}/{{c.key().id()}}">delete</a>
         {% endif %}
         </div>
         <div class="comment-date">
@@ -43,6 +43,7 @@
       <input type="hidden" name="username" value="{{user.username}}">
     <textarea name="comment">{{comment}}</textarea><br>
     <input type="submit">
+      {% endfor %}
   </label>
 </form>
 {% endblock %}
