@@ -259,6 +259,27 @@ class AddLike(Handler):
             self.redirect("/blog/login")
 
 
+class Unlike(Handler):
+    def get(self, key_id):
+        if self.user:
+            post = Post.get_by_id(int(key_id))
+            if self.user.key().id() == post.user_id:
+                self.redirect("/blog/" + key_id +
+                              "?error=You cannot like your " +
+                              "post.!!")
+                return
+
+            liked = Like.checkLikes(key_id, self.user.key().id())
+            if not liked:
+                liked = db.GqlQuery("SELECT * FROM Like where post_id = " + str(key_id) + "and user_id="+ str(self.user.key().id())).get()
+                liked.delete()
+                self.redirect('/blog/%s' %key_id)
+            else:
+                self.redirect("/blog/" + key_id +
+                              "?error=You didn't like this post!")
+        else:
+            self.redirect("/blog/login")
+
 #user
 class User(db.Model):
     username = db.StringProperty(required=True)
@@ -381,6 +402,7 @@ app = webapp2.WSGIApplication([
     ('/blog/editpost/([0-9]+)', EditPostPage),
     ('/blog/delete/([0-9]+)', DeletePost),
     ('/blog/addLike/([0-9]+)', AddLike),
+    ('/blog/unlike/([0-9]+)', Unlike),
     ('/blog/signup', Register),
     ('/blog/login', Login),
     ('/blog/welcome', Welcome),
