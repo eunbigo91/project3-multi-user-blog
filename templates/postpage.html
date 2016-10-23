@@ -10,7 +10,7 @@
         {% if liked %}
            <a class="login-link" href="/blog/addLike/{{p.key().id()}}">like {{numOfLikes}}</a>
         {% else %}
-         <a class="login-link" href="/blog/unLike/{{p.key().id()}}">unlike {{numOfLikes}}</a>
+         <a class="login-link" href="/blog/unlike/{{p.key().id()}}">unlike {{numOfLikes}}</a>
         {% endif %}
       </div>
   {% endfor %}
