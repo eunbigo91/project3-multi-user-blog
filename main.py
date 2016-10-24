@@ -307,6 +307,19 @@ class EditComment(Handler):
             error = "Please write comment!!"
             self.render("editcomment.html", comment=comment)
 
+class DeleteComment(Handler):
+    def get(self, key_id, c_id):
+        if self.user:
+            post = Post.get_by_id(int(key_id))
+            c = Comment.get_by_id(int(c_id))
+            if c.username == self.user.username:
+                c.delete()
+                self.redirect('/blog/%s' %post.key().id())
+            else:
+                self.error(401)
+        else:
+            self.redirect("/blog/login")
+
 
 #user
 class User(db.Model):
@@ -432,6 +445,7 @@ app = webapp2.WSGIApplication([
     ('/blog/addlike/([0-9]+)', AddLike),
     ('/blog/unlike/([0-9]+)', Unlike),
     ('/blog/editcomment/([0-9]+)/([0-9]+)', EditComment),
+    ('/blog/deletecomment/([0-9]+)/([0-9]+)', DeleteComment),
     ('/blog/signup', Register),
     ('/blog/login', Login),
     ('/blog/welcome', Welcome),
