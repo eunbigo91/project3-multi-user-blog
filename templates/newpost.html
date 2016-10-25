@@ -1,58 +1,22 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Eunbi's Blog New Post</title>
-    </head>
-    <style type="text/css">
-        body{
-            font-family: sans-serif;
-            width:
-            ;
-            margin: 0 auto;
-            padding: 10px;
-        }
-        .error {
-            color: red;
-        }
-        h1 {
-            font-size: 40px;
-        }
-        label {
-            display: block;
-            font-size: 20px;
-        }
-        input[type=text] {
-            width: 500px;
-            font-size: 20px;
-            padding: 2px;
-            font-family: monospace;
-        }
-        textarea {
-            width: 500px;
-            height: 400px;
-            font-size: 17px;
-            font-family: monospace;
-        }
-        input[type=submit] {
-            font-size: 24px;
-        }
 
-    </style>
-    <body>
-        <h1>{% if post_id %}edit post{% else %}new post{% endif %}</h1>
-        <form method="post">
-            <input type="hidden" id="post_id" name="post_id" value="{{post_id}}">
-            <label>
-                <div>subject</div>
-                <input type="text" name="subject" value="{{subject}}">
-            </label>
+{% extends "base.html" %}
 
-            <label>
-                <div>blog</div>
-                <textarea name="content">{% if content %}{{ content | safe}}{% endif %}</textarea>
-            </label>
-            <div class="error">{{error}}</div>
-            <input type="submit">
-        </form>
-    </body>
-</html>
+{% block content %}
+
+    <h1>{% if post_id %}Edit post{% else %}New post{% endif %}</h1>
+    <form method="post">
+        <input type="hidden" id="post_id" name="post_id" value="{{post_id}}">
+        <label class="newpost-form">
+            <div>Subject</div>
+            <input class="new-title" type="text" name="subject" value="{{subject}}">
+        </label>
+
+        <label class="newpost-form">
+            <div>Blog</div>
+            <textarea class="new-content" name="content">{% if content %}{{ content | safe}}{% endif %}</textarea>
+        </label>
+        <div class="error"><font color="red">{{error}}</font></div>
+        <input type="submit">
+    </form>
+
+{% endblock %}

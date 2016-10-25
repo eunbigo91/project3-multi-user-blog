@@ -1,11 +1,11 @@
 body {
     position: relative;
-    font-family: Helvetica, Arial, sans-serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 14px;
     width: 90%;
     margin: 0 auto;
     padding: 10px;
-    color: #333;
+    background: #e9dcdc;
 }
 
 h2 {
@@ -15,23 +15,41 @@ h2 {
 }
 
 .login-area {
-    font-size: 13px;
-    color: gray;
+    font-size: 16px;
+    color: #967577;
     position: absolute;
     top: 10px;
     right: 10px;
 }
 
 .login-link {
-    color: gray;
+    color: #967577;
     text-decoration: none;
 }
 
 .login-link:visited {
-    color: gray;
+    color: #967577;
 }
 
 .login-link:hover {
+    text-decoration: underline;
+}
+
+.newpost-area {
+    text-align: right;
+}
+
+.newpost {
+    font-size: 18px;
+    color: #967577;
+    text-decoration: none;
+}
+
+.newpost:visited {
+    color: #967577;
+}
+
+.newpost:hover {
     text-decoration: underline;
 }
 
@@ -45,35 +63,39 @@ h2 {
     text-decoration: none;
 }
 
+.post {
+}
+
 .post + .post {
     margin-top: 15px;
 }
 
 .post-heading {
     position: relative;
-    border-bottom: 3px solid #666;
 }
 
 .post-title {
     font-size: 24px;
     font-weight: bold;
     text-decoration: none;
-    color: #333;
+    color: #45350f;
 }
 
 .post-title:visisted {
-    color: #333;
+    color: #45350f;
 }
 
 .post-date {
     position: absolute;
     right: 0px;
     bottom: 0px;
-    color: #999;
+    color: #967577;
 }
 
 .post-content {
     margin-top: 5px;
+    font-family: 'Catamaran', sans-serif;
+    color: #967577;
 }
 
 .post-end {
@@ -82,10 +104,27 @@ h2 {
     color: gray;
 }
 
+.post-option {
+    color: #967577;
+    text-decoration: none;
+}
+
+.post-option:visited {
+    color: #967577;
+}
+
+.numOfLikes {
+    font-size: 20px;
+}
+
+.comment-heading {
+    position: relative;
+}
+
 .comment-date {
     position: absolute;
     right: 0px;
-    color: #999;
+    color: #967577;
 }
 
 .comment-writer {
@@ -97,6 +136,43 @@ h2 {
 .comment-link {
     color: gray;
     text-decoration: none;
+    font-size: 15px;
+}
+
+.comment-content{
+    font-family: 'Catamaran', sans-serif;
+    font-size: 16px;
+}
+
+.comment-input {
+    font-size: 18px;
+}
+
+.new-title {
+    width: 500px;
+    font-size: 15px;
+    padding: 2px;
+    font-family: 'Catamaran', sans-serif;
+}
+
+.new-content {
+    width: 500px;
+    height: 400px;
+    font-size: 15px;
+    font-family: 'Catamaran', sans-serif;
+}
+
+.newpost-form {
+    font-size: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input[type=submit] {
+    font-size: 24px;
 }
 
 textarea {

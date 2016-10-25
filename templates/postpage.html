@@ -1,49 +1,53 @@
 {% extends "blogpage.html" %}
 
 {% block post %}
-  {% for p in posts %}
-      <div class="post-end">
-        {% if p.user_id == user.key().id() %}
-          <a class="login-link" href="/blog/editpost/{{p.key().id()}}">edit</a> |
-          <a class="login-link" href="/blog/delete/{{p.key().id()}}">delete</a>
+{% for p in posts %}
+  <div class="post-end">
+    <div class="numOfLikes">
+      {{numOfLikes}}
+    </div>
+
+    {% if p.user_id == user_id %}
+      <a class="post-option" href="/blog/editpost/{{p.key().id()}}">edit</a> |
+      <a class="post-option" href="/blog/delete/{{p.key().id()}}">delete</a>
+    {% else%}
+      {% if liked %}
+         <a class="post-option" href="/blog/addlike/{{p.key().id()}}">Like</a>
+      {% else %}
+       <a class="post-option" href="/blog/unlike/{{p.key().id()}}">Unlike</a>
+      {% endif %}
+    {% endif %}
+    <br>
+
+  </div>
+
+  <form method="post">
+    <label>
+       {% for c in comments %}
+       <div class="comment">
+        <div class="comment-heading">
+          <div class="comment-writer">
+            {{c.username}}
+          {% if c.username == user.username %}
+              <a class="comment-link" href="/blog/editcomment/{{p.key().id()}}/{{c.key().id()}}">edit</a> |
+              <a class="comment-link" href="/blog/deletecomment/{{p.key().id()}}/{{c.key().id()}}">delete</a>
           {% endif %}
-        {% if liked %}
-           <a class="login-link" href="/blog/addlike/{{p.key().id()}}">like {{numOfLikes}}</a>
-        {% else %}
-         <a class="login-link" href="/blog/unlike/{{p.key().id()}}">unlike {{numOfLikes}}</a>
-        {% endif %}
-      </div>
-
-
-<form method="post">
-  <label>
-     {% for c in comments %}
-     <div class="comment">
-      <div class="comment-heading">
-        <div class="comment-writer">
-          {{c.username}}
+          </div>
+          <div class="comment-date">
+            {{c.created.strftime("%b %d, %Y")}}
+          </div>
         </div>
-        <div class="comment-option">
-        {% if c.username == user.username %}
-            <a class="comment-link" href="/blog/editcomment/{{p.key().id()}}/{{c.key().id()}}">edit</a> |
-            <a class="comment-link" href="/blog/deletecomment/{{p.key().id()}}/{{c.key().id()}}">delete</a>
-        {% endif %}
+        <div class="comment-content">
+          {{c.comment.replace("\n", "<br>") | safe}}
         </div>
-        <div class="comment-date">
-          {{c.created.strftime("%b %d, %Y")}}
         </div>
-      </div>
-      <div class="comment-content">
-        {{c.comment.replace("\n", "<br>") | safe}}
-      </div>
-      </div>
-        <br><br>
-      {% endfor %}
-      <div class="comment-input">Comment ({{user.username}})</div>
-      <input type="hidden" name="username" value="{{user.username}}">
-    <textarea name="comment">{{comment}}</textarea><br>
-    <input type="submit">
-      {% endfor %}
-  </label>
-</form>
+          <br><br>
+        {% endfor %}
+        <div class="comment-input">Comment ({{user.username}})</div>
+        <input type="hidden" name="username" value="{{user.username}}">
+      <textarea name="comment">{{comment}}</textarea><br>
+      <input type="submit">
+        {% endfor %}
+    </label>
+  </form>
 {% endblock %}
