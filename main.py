@@ -53,22 +53,17 @@ def valid_pw(username, password, h):
         return True
 
 
+# Create secure value using SECRET
 def make_secure_val(user_id):
     hash = hmac.new(SECRET, user_id).hexdigest()
     return "%s|%s" % (user_id, hash)
 
 
+# Verify secure value against SECRET
 def check_secure_val(secure_val):
-    """
-        Verifies secure value against secret.
-    """
     val = secure_val.split('|')[0]
     if secure_val == make_secure_val(val):
         return val
-
-
-def valid_user_cookie(user_id, cookie):
-    return (cookie == make_secure_val(user_id))
 
 
 def valid_login(username, password):
@@ -88,9 +83,15 @@ def valid_login(username, password):
 
 
 class Handler(webapp2.RequestHandler):
+    """
+        This is a Handler Class, inherits webapp2.RequestHandler,
+        and provides helper methods.
+    """
+    # This method writes output to client browser
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
 
+    # This method renders html using template
     def render_str(self, template, **params):
         params['user'] = self.user
         return render_str(template, **params)
@@ -98,20 +99,27 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+    # Read secure cookie to browser
     def read_secure_cookie(self, name):
         cookie_val = self.request.cookies.get(name)
         return cookie_val and check_secure_val(cookie_val)
 
+    # Make and add header 'user_id'
     def login(self, user_id):
         cookie = make_secure_val(user_id)
         self.response.headers.add_header('Set-Cookie',
                                          'user_id=%s; Path=/' % cookie)
         self.redirect("/blog/welcome")
 
+    # Remove cookie information
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
     def initialize(self, *a, **kw):
+        """
+            This method gets executed for each page and
+            verity user login status, using cookie informaion
+        """
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.by_id(int(uid))
@@ -152,18 +160,21 @@ class Like(db.Model):
 
 
 class MainPage(Handler):
+    # Render main page with all posts, sorted by date
     def get(self):
         posts = Post.all().order('-created')
         self.render("blogpage.html", posts=posts)
 
 
 class NewPostPage(Handler):
+    # Render new post page
     def get(self):
         if self.user:
             self.render("newpost.html")
         else:
             self.redirect("/blog/login")
 
+    # Create new post and redirect to post page
     def post(self):
         if not self.user:
             self.redirect("/blog/signup")
@@ -182,18 +193,24 @@ class NewPostPage(Handler):
 
 
 class PostPage(Handler):
+    # Render post page with comments and likes
     def get(self, key_id):
         post = Post.get_by_id(int(key_id))
         if not post:
             self.redirect("/blog")
         comments = db.GqlQuery("SELECT * FROM Comment WHERE post_id = :id" +
                                " ORDER BY created ASC", id=int(key_id))
-        user_id = str(self.user.key().id())
         likes = Like.getNumOfLikes(key_id)
-        liked = Like.checkLikes(key_id, self.user.key().id())
-        self.render("postpage.html", posts=[post], comments=comments,
-                    numOfLikes=likes, liked=liked)
+        if self.user:
+            liked = Like.checkLikes(key_id, self.user.key().id())
+            self.render("postpage.html", posts=[post], comments=comments,
+                        numOfLikes=likes, liked=liked,
+                        user_id=self.user.key().id())
+        else:
+            self.render("postpage.html", posts=[post], comments=comments,
+                        numOfLikes=likes, liked=True)
 
+    # Add comment to Comment db and render post page
     def post(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -215,6 +232,7 @@ class PostPage(Handler):
 
 
 class EditPostPage(Handler):
+    # Render newpost.html with subject and content to edit post
     def get(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -226,6 +244,7 @@ class EditPostPage(Handler):
         else:
             self.redirect("/blog/login")
 
+    # Update post
     def post(self, key_id):
         if not self.user:
             return self.redirect('/blog/login')
@@ -247,6 +266,7 @@ class EditPostPage(Handler):
 
 
 class DeletePost(Handler):
+    # Delete post
     def get(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -260,6 +280,7 @@ class DeletePost(Handler):
 
 
 class AddLike(Handler):
+    # Add likes to Like db when user click 'like'
     def get(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -281,6 +302,7 @@ class AddLike(Handler):
 
 
 class Unlike(Handler):
+    # Delete like db when user click 'unlike'
     def get(self, key_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -305,6 +327,7 @@ class Unlike(Handler):
 
 
 class EditComment(Handler):
+    # Render edit comment page
     def get(self, key_id, c_id):
         if self.user:
             c = Comment.get_by_id(int(c_id))
@@ -315,6 +338,7 @@ class EditComment(Handler):
         else:
             self.redirect("/blog/login")
 
+    # Update comment
     def post(self, key_id, c_id):
         post = Post.get_by_id(int(key_id))
         if not self.user:
@@ -333,6 +357,7 @@ class EditComment(Handler):
 
 
 class DeleteComment(Handler):
+    # Delete comment
     def get(self, key_id, c_id):
         if self.user:
             post = Post.get_by_id(int(key_id))
@@ -346,7 +371,7 @@ class DeleteComment(Handler):
             self.redirect("/blog/login")
 
 
-# user
+# User
 class User(db.Model):
     username = db.StringProperty(required=True)
     pw_hash = db.StringProperty(required=True)
@@ -355,7 +380,7 @@ class User(db.Model):
     @classmethod
     def by_id(self, uid):
         """
-            This method fetchs User object from database, whose id is {uid}.
+            Fetch User object from database, whose id is {uid}
         """
         return User.get_by_id(uid)
 
@@ -367,7 +392,7 @@ class User(db.Model):
     @classmethod
     def login(self, username, pw):
         """
-            This method creates a new User in database.
+            Create a new User in database.
         """
         u = valid_login(username, pw)
         if u:
@@ -376,7 +401,7 @@ class User(db.Model):
     @classmethod
     def register(self, username, pw, email=None):
         """
-            This method creates a new User in database.
+            Create a new User in database.
         """
         pw_hash = make_pw_hash(username, pw)
         return User(username=username,
@@ -455,8 +480,7 @@ class Login(Handler):
 class Welcome(Handler):
     def get(self):
         cookie = self.request.cookies.get("user_id")
-        user_id = cookie.split("|", 1)[0]
-        if not valid_user_cookie(user_id, cookie):
+        if not check_secure_val(cookie):
             self.redirect("/blog/signup")
         else:
             self.render("welcome.html", username=self.user.username)
