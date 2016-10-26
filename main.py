@@ -242,7 +242,7 @@ class AddLike(Handler):
                 self.redirect("/" + key_id +
                               "?error=You already liked!")
         else:
-            self.redirect("/blog/login")
+            self.redirect("/login")
 
 
 class Unlike(Handler):
