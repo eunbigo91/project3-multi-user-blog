@@ -6,15 +6,15 @@
     <title>Eunbi's Blog</title>
 </head>
 <body>
-    <a href="/blog" class="main-title">Eunbi's Blog</a>
+    <a href="/" class="main-title">Eunbi's Blog</a>
     <div class="login-area">
         {% if user %}
-          {{user.username}} (<a class="login-link" href="/blog/logout">Logout</a>)
-          <div class="newpost-area"><a class="newpost" href="/blog/newpost">+Newpost</a></div>
+          {{user.username}} (<a class="login-link" href="/logout">Logout</a>)
+          <div class="newpost-area"><a class="newpost" href="/newpost">+Newpost</a></div>
         {% else %}
-          <a class="login-link" href="/blog/login">Login</a>
+          <a class="login-link" href="/login">Login</a>
           |
-          <a class="login-link" href="/blog/signup">Signup</a>
+          <a class="login-link" href="/signup">Signup</a>
         {% endif %}
     </div>
 

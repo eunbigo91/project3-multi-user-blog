@@ -8,13 +8,13 @@
     </div>
 
     {% if p.user_id == user_id %}
-      <a class="post-option" href="/blog/editpost/{{p.key().id()}}">edit</a> |
-      <a class="post-option" href="/blog/delete/{{p.key().id()}}">delete</a>
+      <a class="post-option" href="/editpost/{{p.key().id()}}">edit</a> |
+      <a class="post-option" href="/delete/{{p.key().id()}}">delete</a>
     {% else%}
       {% if liked %}
-         <a class="post-option" href="/blog/addlike/{{p.key().id()}}">Like</a>
+         <a class="post-option" href="/addlike/{{p.key().id()}}">Like</a>
       {% else %}
-       <a class="post-option" href="/blog/unlike/{{p.key().id()}}">Unlike</a>
+       <a class="post-option" href="/unlike/{{p.key().id()}}">Unlike</a>
       {% endif %}
     {% endif %}
     <br>
@@ -30,8 +30,8 @@
           <div class="comment-writer">
             {{c.username}}
           {% if c.username == user.username %}
-              <a class="comment-link" href="/blog/editcomment/{{p.key().id()}}/{{c.key().id()}}">edit</a> |
-              <a class="comment-link" href="/blog/deletecomment/{{p.key().id()}}/{{c.key().id()}}">delete</a>
+              <a class="comment-link" href="/editcomment/{{p.key().id()}}/{{c.key().id()}}">edit</a> |
+              <a class="comment-link" href="/deletecomment/{{p.key().id()}}/{{c.key().id()}}">delete</a>
           {% endif %}
           </div>
           <div class="comment-date">
