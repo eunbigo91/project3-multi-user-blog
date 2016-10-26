@@ -4,7 +4,7 @@ This is a website project dedicated to multi user blog for Udacity's Full Stack 
 
 ## Live Version
 
-[Eunbi's blog](https://multi-user-blog-eunbi.appspot.com/blog)
+[Eunbi's blog](https://multi-user-blog-eunbi.appspot.com/)
 
 ## Steps to run
 
