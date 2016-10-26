@@ -225,8 +225,9 @@ class PostPage(Handler):
                                    ":id ORDER BY created ASC", id=int(key_id))
             likes = Like.getNumOfLikes(key_id)
             liked = Like.checkLikes(key_id, self.user.key().id())
-            self.render("postpage.html", posts=[post], comments=comments,
-                        numOfLikes=likes, liked=liked)
+            #self.render("postpage.html", posts=[post], comments=comments,
+            #            numOfLikes=likes, liked=liked)
+            self.redirect('/blog/%s' % post.key().id())
         else:
             self.redirect("/blog/login")
 
