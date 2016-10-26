@@ -23,6 +23,7 @@
 
   <form method="post">
     <label>
+      {% if user_id %}
        {% for c in comments %}
        <div class="comment">
         <div class="comment-heading">
@@ -47,7 +48,8 @@
         <input type="hidden" name="username" value="{{user.username}}">
       <textarea name="comment">{{comment}}</textarea><br>
       <input type="submit">
-        {% endfor %}
+      {% endif %}
     </label>
   </form>
+{% endfor %}
 {% endblock %}
