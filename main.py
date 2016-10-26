@@ -247,23 +247,27 @@ class EditPostPage(Handler):
 
     # Update post
     def post(self, key_id):
-        if not self.user:
-            return self.redirect('/blog/login')
+        if self.user:
+            post = Post.get_by_id(int(key_id))
+            if post.user_id == self.user.key().id():
+                subject = self.request.get('subject')
+                content = self.request.get('content')
 
-        subject = self.request.get('subject')
-        content = self.request.get('content')
-
-        if subject and content:
-            key = db.Key.from_path('Post', int(key_id))
-            post = db.get(key)
-            post.subject = subject
-            post.content = content
-            post.put()
-            self.redirect('/blog/%s' % post.key().id())
+                if subject and content:
+                    key = db.Key.from_path('Post', int(key_id))
+                    post = db.get(key)
+                    post.subject = subject
+                    post.content = content
+                    post.put()
+                    self.redirect('/blog/%s' % post.key().id())
+                else:
+                    error = "Please write subject and content!!"
+                    self.render("newpost.html", subject=subject, content=content,
+                                error=error)
+            else:
+                self.redirect("/blog")
         else:
-            error = "Please write subject and content!!"
-            self.render("newpost.html", subject=subject, content=content,
-                        error=error)
+            self.redirect('/blog/login')
 
 
 class DeletePost(Handler):
@@ -342,19 +346,22 @@ class EditComment(Handler):
     # Update comment
     def post(self, key_id, c_id):
         post = Post.get_by_id(int(key_id))
-        if not self.user:
-            return self.redirect('/blog/login')
-
-        comment = self.request.get('comment')
-
-        if comment:
+        if self.user:
+            comment = self.request.get('comment')
             c = Comment.get_by_id(int(c_id))
-            c.comment = comment
-            c.put()
-            self.redirect('/blog/%s' % post.key().id())
+            if c.username == self.user.username:
+                if comment:
+                    c = Comment.get_by_id(int(c_id))
+                    c.comment = comment
+                    c.put()
+                    self.redirect('/blog/%s' % post.key().id())
+                else:
+                    error = "Please write comment!!"
+                    self.render("editcomment.html", comment=comment)
+            else:
+                self.redirect('/blog/%s' % post.key().id())
         else:
-            error = "Please write comment!!"
-            self.render("editcomment.html", comment=comment)
+            self.redirect("/blog/login")
 
 
 class DeleteComment(Handler):
