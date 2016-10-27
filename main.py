@@ -9,10 +9,8 @@ import string
 import cgi
 from google.appengine.ext import db
 
-from user import User
-from post import Post
-from like import Like
-from comment import Comment
+from models import User, Post, Comment, Like
+
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
@@ -174,8 +172,10 @@ class PostPage(Handler):
 class EditPostPage(Handler):
     # Render newpost.html with subject and content to edit post
     def get(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        if not post:
+            self.redirect("/")
         if self.user:
-            post = Post.get_by_id(int(key_id))
             if post.user_id == self.user.key().id():
                 self.render("newpost.html", post_id=key_id,
                             subject=post.subject, content=post.content)
@@ -186,8 +186,10 @@ class EditPostPage(Handler):
 
     # Update post
     def post(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        if not post:
+            self.redirect("/")
         if self.user:
-            post = Post.get_by_id(int(key_id))
             if post.user_id == self.user.key().id():
                 subject = self.request.get('subject')
                 content = self.request.get('content')
@@ -212,8 +214,10 @@ class EditPostPage(Handler):
 class DeletePost(Handler):
     # Delete post
     def get(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        if not post:
+            self.redirect("/")
         if self.user:
-            post = Post.get_by_id(int(key_id))
             if post.user_id == self.user.key().id():
                 post.delete()
                 self.redirect("/")
@@ -226,8 +230,10 @@ class DeletePost(Handler):
 class AddLike(Handler):
     # Add likes to Like db when user click 'like'
     def get(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        if not post:
+            self.redirect("/")
         if self.user:
-            post = Post.get_by_id(int(key_id))
             if self.user.key().id() == post.user_id:
                 self.redirect("/" + key_id +
                               "?error=You cannot like your " +
@@ -248,8 +254,10 @@ class AddLike(Handler):
 class Unlike(Handler):
     # Delete like db when user click 'unlike'
     def get(self, key_id):
+        post = Post.get_by_id(int(key_id))
+        if not post:
+            self.redirect("/")
         if self.user:
-            post = Post.get_by_id(int(key_id))
             if self.user.key().id() == post.user_id:
                 self.redirect("/" + key_id +
                               "?error=You cannot like your " +
@@ -273,8 +281,10 @@ class Unlike(Handler):
 class EditComment(Handler):
     # Render edit comment page
     def get(self, key_id, c_id):
+        c = Comment.get_by_id(int(c_id))
+        if not c:
+            self.redirect("/")
         if self.user:
-            c = Comment.get_by_id(int(c_id))
             if c.username == self.user.username:
                 self.render("editcomment.html", comment=c.comment)
             else:
@@ -285,9 +295,11 @@ class EditComment(Handler):
     # Update comment
     def post(self, key_id, c_id):
         post = Post.get_by_id(int(key_id))
+        c = Comment.get_by_id(int(c_id))
+        if not c:
+            self.redirect("/")
         if self.user:
             comment = self.request.get('comment')
-            c = Comment.get_by_id(int(c_id))
             if c.username == self.user.username:
                 if comment:
                     c = Comment.get_by_id(int(c_id))
@@ -306,9 +318,13 @@ class EditComment(Handler):
 class DeleteComment(Handler):
     # Delete comment
     def get(self, key_id, c_id):
+        post = Post.get_by_id(int(key_id))
+        c = Comment.get_by_id(int(c_id))
+        if not post:
+            self.redirect("/")
+        if not c:
+            self.redirect("/")
         if self.user:
-            post = Post.get_by_id(int(key_id))
-            c = Comment.get_by_id(int(c_id))
             if c.username == self.user.username:
                 c.delete()
                 self.redirect('/%s' % post.key().id())
@@ -366,7 +382,7 @@ class Register(Signup):
             u = User.register(self.username, self.password, self.email)
             u.put()
             self.login(str(u.key().id()))
-            self.redirect('/')
+            self.redirect('/welcome')
 
 
 class Login(Handler):

@@ -77,3 +77,37 @@ class User(db.Model):
         return User(username=username,
                     pw_hash=pw_hash,
                     email=email)
+
+
+class Comment(db.Model):
+    username = db.StringProperty(required=True)
+    comment = db.TextProperty(required=True)
+    post_id = db.IntegerProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+
+
+class Post(db.Model):
+    subject = db.StringProperty(required=True)
+    content = db.TextProperty(required=True)
+    user_id = db.IntegerProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+
+class Like(db.Model):
+    user_id = db.IntegerProperty(required=True)
+    post_id = db.IntegerProperty(required=True)
+
+    @classmethod
+    def getNumOfLikes(self, post_id):
+        likes = db.GqlQuery("SELECT * FROM Like where post_id = " +
+                            str(post_id))
+        return likes.count()
+
+    @classmethod
+    def checkLikes(self, post_id, user_id):
+        likes = db.GqlQuery("SELECT * FROM Like where post_id = " +
+                            str(post_id) + "and user_id=" + str(user_id))
+        if likes.count() == 0:
+            l = Like(user_id=int(user_id), post_id=int(post_id))
+            return l
+
+
