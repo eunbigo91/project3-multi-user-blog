@@ -7,6 +7,11 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /(.*\.svg)
+  static_files: static/\1
+  upload: static/(.*\.svg)
+  mime_type: image/svg+xml
+
 - url: /.*
   script: main.app
 

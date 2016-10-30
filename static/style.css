@@ -5,7 +5,7 @@ body {
     width: 90%;
     margin: 0 auto;
     padding: 10px;
-    background: #e9dcdc;
+    background: #f4e9e3;
 }
 
 h2 {
@@ -55,15 +55,11 @@ h2 {
 
 .main-title {
     display: block;
-    color: #222;
-    font-size: 40px;
-    font-weight: bold;
     text-align: center;
-    margin-bottom: 30px;
-    text-decoration: none;
 }
 
-.post {
+.logo {
+    width: 400px;
 }
 
 .post + .post {

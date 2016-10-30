@@ -8,6 +8,8 @@ import random
 import string
 import cgi
 from google.appengine.ext import db
+from google.appengine.api import images
+
 
 from models import User, Post, Comment, Like
 
