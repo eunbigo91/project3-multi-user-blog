@@ -77,8 +77,8 @@ h2 {
     margin: 3em;
 }
 
-.post + .post {
-    margin-top: 15px;
+.post {
+    margin-bottom: 3em;
 }
 
 .post-heading {
@@ -109,23 +109,24 @@ h2 {
     color: #967577;
 }
 
-.post-end {
-    font-size: 15px;
-    text-align: center;
+.numOfLikes {
+    font-size: 20px;
     color: gray;
+}
+
+.post-option-panel{
+    margin: 1em;
+    font-size: 20px;
 }
 
 .post-option {
     color: #967577;
     text-decoration: none;
+    margin: 1em;
 }
 
 .post-option:visited {
     color: #967577;
-}
-
-.numOfLikes {
-    font-size: 20px;
 }
 
 .comment {
@@ -159,13 +160,13 @@ h2 {
     font-size: 16px;
 }
 
-.comment-form {
+.comment-form, .editcomment-form {
     margin-top: 15px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.comment-form textarea {
+.comment-form textarea, .editcomment-form textarea {
     width: calc(100% - 150px);
     height: 50px;
     padding: 5px;
@@ -173,7 +174,15 @@ h2 {
     border: 1px solid #21283b;
 }
 
-.comment-form input.submit-button {
+.comment-form input.submit-button{
+    background-color: #21283b;
+    color: #fff;
+    width: 50px;
+    height: 62px;
+    float: right;
+}
+
+.editcomment-form input.submit-button {
     background-color: #21283b;
     color: #fff;
     width: 50px;
@@ -283,7 +292,6 @@ h2 {
     width: 612px;
 }
 
-
 label {
     float: left;
     text-align: right;
@@ -299,6 +307,7 @@ label {
 footer {
     background:
         url(/static/img/footer.jpg) no-repeat;
+    width: 100%;
     padding: 1.5em 0 1em;
 }
 

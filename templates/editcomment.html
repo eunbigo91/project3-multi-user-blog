@@ -1,17 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
-        <h2>Edit comment</h2> <br>
+
+<div class="content">
+    <h2 class="center">Edit comment</h2>
+    <div class="editcomment-form">
         <form method="post">
-            <div class="form-group">
-                <label for="subject">Comment:</label>
-                <textarea id="comment" name="comment">{{comment}}</textarea>
-            </div>
-
-            <button type="submit">Submit</button>
+            <label for="comment" class="comment-label">Comment</label>
+            <textarea id="comment" name="comment">{{comment}}</textarea>
+            <input type="submit" class="submit-button">
         </form>
+    </div>
 </div>
-
 
 {% endblock %}

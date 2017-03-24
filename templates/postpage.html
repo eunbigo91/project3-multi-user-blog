@@ -3,20 +3,22 @@
 {% block post %}
 {% for p in posts %}
   <div class="post-end">
-    <div class="numOfLikes">
+    <div class="numOfLikes center">
       {{numOfLikes}}
     </div>
 
-    {% if p.user_id == user_id %}
-      <a class="post-option" href="/editpost/{{p.key().id()}}">edit</a> |
-      <a class="post-option" href="/delete/{{p.key().id()}}">delete</a>
-    {% else%}
+    <div class="post-option-panel center">
+      {% if p.user_id == user_id %}
+        <a class="post-option" href="/editpost/{{p.key().id()}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+        <a class="post-option" href="/delete/{{p.key().id()}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+      {% else%}
       {% if liked %}
          <a class="post-option" href="/addlike/{{p.key().id()}}">Like</a>
       {% else %}
-       <a class="post-option" href="/unlike/{{p.key().id()}}">Unlike</a>
+         <a class="post-option" href="/unlike/{{p.key().id()}}">Unlike</a>
       {% endif %}
-    {% endif %}
+      {% endif %}
+    </div>
     <br>
 
   </div>
@@ -41,6 +43,7 @@
       </div>
     </div>
   {% endfor %}
+
   <div class="comment-form">
     <form method="post">
       <label class="comment-label" for="comment">Comment ({{user.username}})</label>
@@ -48,8 +51,9 @@
       <textarea name="comment">{{comment}}</textarea>
       <input type="submit" class="submit-button">
     </form>
+  </div>
+
     {% endif %}
 
-  </div>
 {% endfor %}
 {% endblock %}

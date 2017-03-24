@@ -2,8 +2,9 @@
 
 {% block content %}
 
-<div class="content">
+
   {% for p in posts %}
+  <div class="content">
       <div class="post">
         <div class="post-heading">
            <a href="/{{p.key().id()}}" class="post-title">
@@ -17,11 +18,13 @@
         {{p.content.replace("\n", "<br>") | safe}}
         </div>
       </div>
+
         {% block post %}
         {% endblock %}
-    <br><br>
-  {% endfor %}
 </div>
+  {% endfor %}
+
+
 {% if comments %}
 
 {% endif %}
