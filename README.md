@@ -10,7 +10,7 @@ This is a website project dedicated to multi user blog for Udacity's Full Stack 
 
 1. Install google app engine
 2. Clone the project (git clone https://github.com/eunbigo91/project3-multi-user-blog.git)
-3. Open command prompt in project folder and run following command: $dev_appserver.py .
+3. Open command prompt in project folder and run following command: dev_appserver.py app.yaml
 4. Open the browser and visit "http://localhost:8080" (Or configured port)
 
 ## Files
