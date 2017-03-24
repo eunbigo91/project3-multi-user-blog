@@ -3,20 +3,20 @@
 
 {% block content %}
 
-    <h1>{% if post_id %}Edit post{% else %}New post{% endif %}</h1>
+<h1 class="center">{% if post_id %}Edit post{% else %}New post{% endif %}</h1>
+
+<div class="newpost-form">
     <form method="post">
         <input type="hidden" id="post_id" name="post_id" value="{{post_id}}">
-        <label class="newpost-form">
-            <div>Subject</div>
+        <label for="subject"> SUBJECT </label>
             <input class="new-title" type="text" name="subject" value="{{subject}}">
-        </label>
 
-        <label class="newpost-form">
-            <div>Blog</div>
+
+        <label for="content"> BLOG </label>
             <textarea class="new-content" name="content">{% if content %}{{ content | safe}}{% endif %}</textarea>
-        </label>
-        <div class="error"><font color="red">{{error}}</font></div>
-        <input type="submit">
-    </form>
 
+        <div class="error"><font color="red">{{error}}</font></div>
+        <input type="submit" class="submit-button">
+    </form>
+</div>
 {% endblock %}

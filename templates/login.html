@@ -1,37 +1,28 @@
-{% extends "blogpage.html" %}
+{% extends "base.html" %}
 {% block content %}
 
-<h2>Login</h2>
-<form method="post">
-  <table>
-    <tr>
-      <td class="label">
-        Username
-      </td>
-      <td>
-        <input type="text" name="username" value="{{username}}">
-      </td>
-    </tr>
+<h2 class="center">LOGIN</h2>
 
-    <tr>
-      <td class="label">
-        Password
-      </td>
-      <td>
-        <input type="password" name="password" value="">
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td class="error">
-        <font color="red">{{error}} </font>
-      </td>
-    </tr>
-  </table>
+<div class="login-form">
 
-  <input type="submit">
-</form>
-<br><br>
-If you don't have an account click here
-<a href="/signup">sign up</a>
+  <form method="post">
+
+    <label for="username"> USERNAME </label>
+    <input type="text" name="username" value="{{username}}">
+
+    <label for="password"> PASSWORD </label>
+    <input type="password" name="password" value="">
+
+    <div class="error">
+    <font color="red">{{error}} </font>
+    </div>
+
+    <input type="submit" class="submit-button">
+  </form>
+  <br><br>
+  <h4 class="signup-link">
+    If you don't have an account click here
+    <a href="/signup">sign up</a>
+  </h4>
+</div>
 {% endblock %}

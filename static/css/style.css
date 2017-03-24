@@ -1,0 +1,310 @@
+body {
+    position: relative;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    overflow-x: hidden;
+}
+
+header {
+    background:
+        url(/static/img/header.png) no-repeat;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.login-area {
+    font-size: 16px;
+    color: #967577;
+    position: absolute;
+    top: 25px;
+    right: 30px;
+}
+
+.login-link {
+    color: #967577;
+    text-decoration: none;
+}
+
+.login-link:visited {
+    color: #967577;
+}
+
+.login-link:hover {
+    text-decoration: underline;
+}
+
+.content {
+    width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newpost-area {
+    text-align: right;
+}
+
+.newpost {
+    font-size: 18px;
+    color: #967577;
+    text-decoration: none;
+}
+
+.newpost:visited {
+    color: #967577;
+}
+
+.newpost:hover {
+    text-decoration: underline;
+}
+
+.main-title {
+    display: block;
+    text-align: center;
+}
+
+.logo {
+    width: 45%;
+    max-width: 400px;
+    min-width: 300px;
+    margin: 3em;
+}
+
+.post + .post {
+    margin-top: 15px;
+}
+
+.post-heading {
+    position: relative;
+}
+
+.post-title {
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #45350f;
+}
+
+.post-title:visisted {
+    color: #45350f;
+}
+
+.post-date {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    color: #967577;
+}
+
+.post-content {
+    margin-top: 5px;
+    font-family: 'Catamaran', sans-serif;
+    color: #967577;
+}
+
+.post-end {
+    font-size: 15px;
+    text-align: center;
+    color: gray;
+}
+
+.post-option {
+    color: #967577;
+    text-decoration: none;
+}
+
+.post-option:visited {
+    color: #967577;
+}
+
+.numOfLikes {
+    font-size: 20px;
+}
+
+.comment {
+    margin: 2em 0;
+}
+
+.comment-heading {
+    position: relative;
+}
+
+.comment-date {
+    position: absolute;
+    right: 0px;
+    color: #967577;
+}
+
+.comment-writer {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.comment-link {
+    color: gray;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.comment-content{
+    font-family: 'Catamaran', sans-serif;
+    font-size: 16px;
+}
+
+.comment-form {
+    margin-top: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.comment-form textarea {
+    width: calc(100% - 150px);
+    height: 50px;
+    padding: 5px;
+    margin: 0px 0px 10px 0px;
+    border: 1px solid #21283b;
+}
+
+.comment-form input.submit-button {
+    background-color: #21283b;
+    color: #fff;
+    width: 50px;
+    height: 50px;
+    float: right;
+}
+
+.new-title {
+    width: 500px;
+    font-size: 15px;
+    padding: 2px;
+    font-family: 'Catamaran', sans-serif;
+}
+
+.new-content {
+    width: 500px;
+    height: 400px;
+    font-size: 15px;
+    font-family: 'Catamaran', sans-serif;
+}
+
+.center {
+    text-align: center;
+}
+
+.signup {
+    width: 566px;
+    margin-top: 25px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.signup input {
+    width: 400px;
+    padding: 5px;
+    margin: 0px 0px 10px 0px;
+    border: 1px solid #21283b;
+}
+
+.signup input:focus {
+    border: 1px solid #000;
+}
+
+.signup input.submit-button {
+    margin-left: 115px;
+    background-color: #21283b;
+    color: #fff;
+    width: 413px;
+}
+
+.signup-link {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.error {
+    margin: -.5em 0 .5em 8em;
+}
+
+.login-form {
+    width: 566px;
+    margin-top: 25px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login-form input {
+    width: 400px;
+    padding: 5px;
+    margin: 0px 0px 10px 0px;
+    border: 1px solid #21283b;
+}
+
+.login-form input:focus {
+    border: 1px solid #000;
+}
+
+.login-form input.submit-button {
+    margin-left: 115px;
+    background-color: #21283b;
+    color: #fff;
+    width: 413px;
+}
+
+.newpost-form {
+    width: 800px;
+    margin-top: 25px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newpost-form input, .newpost-form textarea {
+    width: 600px;
+    padding: 5px;
+    margin: 0px 0px 10px 0px;
+    border: 1px solid #21283b;
+}
+
+.newpost-form input:focus {
+    border: 1px solid #000;
+}
+
+.newpost-form input.submit-button {
+    margin-left: 115px;
+    background-color: #21283b;
+    color: #fff;
+    width: 612px;
+}
+
+
+label {
+    float: left;
+    text-align: right;
+    margin-right: 15px;
+    width: 100px;
+    padding-top: 5px;
+}
+
+.comment-label {
+    width: 60px;
+}
+
+footer {
+    background:
+        url(/static/img/footer.jpg) no-repeat;
+    padding: 1.5em 0 1em;
+}
+
+footer a, footer a:hover{
+    margin: 0 1em;
+    position:relative;
+    font-size: 20px;
+    color: #21283b;
+}

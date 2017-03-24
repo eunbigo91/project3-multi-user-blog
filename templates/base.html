@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link type="text/css" rel="stylesheet" href="/static/style.css" />
+    <link type="text/css" rel="stylesheet" href="/static/css/style.css" />
     <link href="https://fonts.googleapis.com/css?family=Catamaran|Cormorant+Garamond" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/font-awesome-4.7.0/css/font-awesome.min.css">
     <title>Eunbi's Blog</title>
 </head>
 <body>
-    <a href="/" class="main-title"> <img class="logo" src="/static/emily-logo.svg" alt="Emily's blog logo"> </a>
+  <header class="center">
+    <a href="/" class="main-title">
+      <img class="logo" src="/static/img/emily-logo.svg" alt="Emily's blog logo">
+    </a>
     <div class="login-area">
         {% if user %}
-          {{user.username}} (<a class="login-link" href="/logout">Logout</a>)
-          <div class="newpost-area"><a class="newpost" href="/newpost">+Newpost</a></div>
+          {{user.username}} (<a class="login-link" href="/logout">LOGOUT</a>)
+          <div class="newpost-area"><a class="newpost" href="/newpost">+ NEWPOST</a></div>
         {% else %}
-          <a class="login-link" href="/login">Login</a>
+          <a class="login-link" href="/login">LOGIN</a>
           |
-          <a class="login-link" href="/signup">Signup</a>
+          <a class="login-link" href="/signup">SIGN UP</a>
         {% endif %}
     </div>
+  </header>
 
     {% block content %}
     {% endblock %}
+
+    <footer class="center">
+      <a href="https://github.com/eunbigo91"><i class="fa fa-github" aria-hidden="true"></i></a>
+      <a href="https://www.linkedin.com/in/eunbi-go-emily/"><i class="fa fa-linkedin-square" aria-hidden="true"></i></a>
+      <a href="https://www.facebook.com/eunbigo10"><i class="fa fa-facebook-official" aria-hidden="true"></i></a>
+      <a href="https://www.instagram.com/eunbi.go"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+  </footer>
 </body>
 
 </html>

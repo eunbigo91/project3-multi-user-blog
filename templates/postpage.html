@@ -21,35 +21,35 @@
 
   </div>
 
-  <form method="post">
-    <label>
-      {% if user_id %}
-       {% for c in comments %}
-       <div class="comment">
-        <div class="comment-heading">
-          <div class="comment-writer">
-            {{c.username}}
+  {% if user_id %}
+  {% for c in comments %}
+    <div class="comment">
+      <div class="comment-heading">
+        <div class="comment-writer">
+          {{c.username}}
           {% if c.username == user.username %}
-              <a class="comment-link" href="/editcomment/{{p.key().id()}}/{{c.key().id()}}">edit</a> |
-              <a class="comment-link" href="/deletecomment/{{p.key().id()}}/{{c.key().id()}}">delete</a>
+          <a class="comment-link" href="/editcomment/{{p.key().id()}}/{{c.key().id()}}">Edit</a> |
+          <a class="comment-link" href="/deletecomment/{{p.key().id()}}/{{c.key().id()}}">Delete</a>
           {% endif %}
-          </div>
-          <div class="comment-date">
-            {{c.created.strftime("%b %d, %Y")}}
-          </div>
         </div>
-        <div class="comment-content">
-          {{c.comment.replace("\n", "<br>") | safe}}
+        <div class="comment-date">
+          {{c.created.strftime("%b %d, %Y")}}
         </div>
-        </div>
-          <br><br>
-        {% endfor %}
-        <div class="comment-input">Comment ({{user.username}})</div>
-        <input type="hidden" name="username" value="{{user.username}}">
-      <textarea name="comment">{{comment}}</textarea><br>
-      <input type="submit">
-      {% endif %}
-    </label>
-  </form>
+      </div>
+      <div class="comment-content">
+        {{c.comment.replace("\n", "<br>") | safe}}
+      </div>
+    </div>
+  {% endfor %}
+  <div class="comment-form">
+    <form method="post">
+      <label class="comment-label" for="comment">Comment ({{user.username}})</label>
+      <input type="hidden" name="username" value="{{user.username}}">
+      <textarea name="comment">{{comment}}</textarea>
+      <input type="submit" class="submit-button">
+    </form>
+    {% endif %}
+
+  </div>
 {% endfor %}
 {% endblock %}
