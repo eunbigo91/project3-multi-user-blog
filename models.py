@@ -91,6 +91,7 @@ class Post(db.Model):
     content = db.TextProperty(required=True)
     user_id = db.IntegerProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
+    username = db.StringProperty(required=True)
 
 class Like(db.Model):
     user_id = db.IntegerProperty(required=True)

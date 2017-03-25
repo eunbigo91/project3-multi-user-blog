@@ -122,7 +122,7 @@ class NewPostPage(Handler):
         content = self.request.get("content")
         if subject and content:
             post = Post(subject=subject, content=content,
-                        user_id=self.user.key().id())
+                        user_id=self.user.key().id(), username=self.user.username)
             post.put()
             self.redirect("/%s" % post.key().id())
         else:
