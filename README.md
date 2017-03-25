@@ -17,8 +17,13 @@ This is a website project dedicated to multi user blog for Udacity's Full Stack 
 ```
 udacity-project3-multi-user-blog.zip/
 ├── static/
-│   └── style.css
-│   └── newpost.css
+│   └── css
+│       └── style.css
+│       └── font-awesome-4.7.0
+│   └── img
+│       └── emily-logo.svg
+│       └── footer.jpg
+│       └── header.png
 ├── templates/
 │   └── base.html
 │   └── blogpage.html
